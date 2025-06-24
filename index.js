@@ -3,14 +3,15 @@ const dotenv = require('dotenv');
 const sequelize = require('./config/db');
 const hotelRoutes = require('./routes/hotel/index');
 const router = require('./routes/routes');
+const cors = require('cors');
 require("./models/hotel/index");
 
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+app.use(cors());
 app.use(express.json());
-
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
