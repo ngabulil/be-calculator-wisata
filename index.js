@@ -18,7 +18,7 @@ app.listen(PORT, () => {
 sequelize.authenticate()
     .then(() => {
         console.log('✅ Connected to DB via Sequelize');
-        return sequelize.sync({ force: true }); // gunakan { force: true } kalau mau reset tabel
+        return sequelize.sync({ alter: true }); // gunakan { force: true } kalau mau reset tabel
     })
     .then(() => {
         console.log('✅ Models synced');

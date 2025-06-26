@@ -1,7 +1,7 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../../config/db');
 
-const HighSeason = sequelize.define('HighSeason', {
+const HighSeason = sequelize.define('HighSeasonVilla', {
   id_villa: {
     type: DataTypes.INTEGER,
     allowNull: false,

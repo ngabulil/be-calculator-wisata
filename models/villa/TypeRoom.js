@@ -1,7 +1,7 @@
  const { DataTypes } = require('sequelize');
 const sequelize = require('../../config/db');
 
-const TypeRoom = sequelize.define('TypeRoom', {
+const TypeRoom = sequelize.define('TypeRoomVilla', {
   id_villa: {
     type: DataTypes.INTEGER,
     allowNull: false,
