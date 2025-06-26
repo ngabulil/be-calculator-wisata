@@ -1,6 +1,127 @@
 const { Villa, TypeRoom, NormalSeason, HighSeason, PeakSeason, Honeymoon } = require('../../models/villa/index');
 const { formatResponse } = require('../../utils/formatResponse');
 
+// 🔹 Delete Villa
+const deleteVillaFull = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // Cari villa dulu
+    const villa = await Villa.findByPk(id, {
+      include: {
+        model: TypeRoom,
+        as: 'rooms',
+      }
+    });
+
+    if (!villa) {
+      return formatResponse(res, 404, 'Villa not found', null);
+    }
+
+    // Hapus semua data turunan berdasarkan tiap tipe room
+    for (const room of villa.rooms) {
+      await Promise.all([
+        NormalSeason.destroy({ where: { id_tipe_room_villa: room.id } }),
+        HighSeason.destroy({ where: { id_tipe_room_villa: room.id } }),
+        PeakSeason.destroy({ where: { id_tipe_room_villa: room.id } }),
+        Honeymoon.destroy({ where: { id_tipe_room_villa: room.id } }),
+      ]);
+    }
+
+    // Hapus type room dan villa
+    await TypeRoom.destroy({ where: { id_villa: id } });
+    await Villa.destroy({ where: { id } });
+
+    formatResponse(res, 200, 'Villa and related data deleted successfully', null);
+  } catch (err) {
+    formatResponse(res, 500, err.message, null);
+  }
+};
+
+// 🔹 Create Villa Full
+const createVillaFull = async (req, res) => {
+  try {
+    const {
+      villaName,
+      stars,
+      photoLink,
+      additionalLink,
+      roomType,
+      seasons,
+      extrabed,
+      contractUntil
+    } = req.body;
+
+    // 1. Buat villa utama
+    const newVilla = await Villa.create({
+      name: villaName,
+      star: stars,
+      link_photo: photoLink,
+      link_additional: additionalLink
+    });
+
+    // 2. Loop roomType dan masukkan semua data turunan
+    for (const room of roomType) {
+      const roomId = room.idRoom;
+
+      const extrabedItem = extrabed.find(r => r.idRoom === roomId);
+      const contractItem = contractUntil.find(r => r.idRoom === roomId);
+
+      // Additional langsung dari room.additional
+      const createdRoom = await TypeRoom.create({
+        id_villa: newVilla.id,
+        name: room.label,
+        extrabed_price: extrabedItem?.price || null,
+        additional: room.additional || null,
+        contract_limit: contractItem?.valid || null
+      });
+
+      // ⬇ Season Data
+      const normalItems = seasons.normal.filter(s => s.idRoom === roomId);
+      await Promise.all(normalItems.map(s =>
+        NormalSeason.create({
+          id_villa: newVilla.id,
+          id_tipe_room_villa: createdRoom.id,
+          price: s.price
+        })
+      ));
+
+      const highItems = seasons.high.filter(s => s.idRoom === roomId);
+      await Promise.all(highItems.map(s =>
+        HighSeason.create({
+          id_villa: newVilla.id,
+          id_tipe_room_villa: createdRoom.id,
+          name: s.label,
+          price: s.price
+        })
+      ));
+
+      const peakItems = seasons.peak.filter(s => s.idRoom === roomId);
+      await Promise.all(peakItems.map(s =>
+        PeakSeason.create({
+          id_villa: newVilla.id,
+          id_tipe_room_villa: createdRoom.id,
+          name: s.label,
+          price: s.price
+        })
+      ));
+
+      const honeymoonItems = seasons.honeymoon?.filter(s => s.idRoom === roomId) || [];
+      await Promise.all(honeymoonItems.map(s =>
+        Honeymoon.create({
+          id_villa: newVilla.id,
+          id_tipe_room_villa: createdRoom.id,
+          price: s.price
+        })
+      ));
+    }
+
+    formatResponse(res, 201, "Villa created with full data", null);
+  } catch (err) {
+    formatResponse(res, 500, err.message, null);
+  }
+};
+
 // 🔹 Get All Villas
 const getAllVillasFull = async (req, res) => {
   try {
@@ -150,5 +271,7 @@ module.exports = {
   getVillaById,
   updateVilla,
   deleteVilla,
-  getAllVillasFull
+  getAllVillasFull,
+  deleteVillaFull,
+  createVillaFull
 };

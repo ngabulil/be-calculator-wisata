@@ -1,6 +1,43 @@
 const { Hotel, TypeRoom, NormalSeason, HighSeason, PeakSeason } = require('../../models/hotel/index');
 const { formatResponse } = require('../../utils/formatResponse');
 
+// Delete Full Hotel
+const deleteHotelFull = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // 1. Cari hotel
+    const hotel = await Hotel.findByPk(id, {
+      include: [{ model: TypeRoom, as: 'rooms' }]
+    });
+
+    if (!hotel) {
+      return res.status(404).json({ message: 'Hotel not found' });
+    }
+
+    // 2. Loop semua tipe room yang dimiliki hotel ini
+    for (const room of hotel.rooms) {
+      const idRoom = room.id;
+
+      // 3. Hapus semua season terkait tipe room
+      await HighSeason.destroy({ where: { id_tipe_room: idRoom } });
+      await PeakSeason.destroy({ where: { id_tipe_room: idRoom } });
+      await NormalSeason.destroy({ where: { id_tipe_room: idRoom } });
+    }
+
+    // 4. Hapus semua tipe room
+    await TypeRoom.destroy({ where: { id_hotel: hotel.id } });
+
+    // 5. Terakhir, hapus hotel-nya
+    await Hotel.destroy({ where: { id: hotel.id } });
+
+    res.status(200).json({ message: 'Hotel and all related data deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting full hotel:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
 // Create Full Hotel
 const createFullHotel = async (req, res) => {
   const {
@@ -217,5 +254,6 @@ module.exports = {
   updateHotel,
   deleteHotel,
   getAllHotelsFull,
-  createFullHotel
+  createFullHotel,
+  deleteHotelFull
 };

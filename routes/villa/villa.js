@@ -7,14 +7,18 @@ const {
     getVillaById,
     updateVilla,
     deleteVilla,
-    getAllVillasFull
+    getAllVillasFull,
+    createVillaFull,
+    deleteVillaFull
 } = require('../../controllers/villa/villaControllers');
 
 
 // CRUD Routes
 router.post('/', createVilla);             // Create Villa
 router.get('/', getAllVillas);             // Get all Villas
-router.get('/full/all', getAllVillasFull); // Get all Villas with full season + room data
+router.get('/full', getAllVillasFull); // Get all Villas with full season + room data
+router.post('/full', createVillaFull);
+router.delete('/full/:id', deleteVillaFull);
 router.get('/:id', getVillaById);          // Get Villa by ID
 router.put('/:id', updateVilla);           // Update Villa
 router.delete('/:id', deleteVilla);        // Delete Villa
