@@ -1,6 +1,84 @@
 const { Hotel, TypeRoom, NormalSeason, HighSeason, PeakSeason } = require('../../models/hotel/index');
 const { formatResponse } = require('../../utils/formatResponse');
 
+// Create Full Hotel
+const createFullHotel = async (req, res) => {
+  const {
+    hotelName,
+    stars,
+    photoLink,
+    roomType,
+    seasons,
+    extrabed,
+    contractUntil
+  } = req.body;
+
+  try {
+    // 🔹 1. Create Hotel
+    const hotel = await Hotel.create({
+      name: hotelName,
+      star: stars,
+      link_photo: photoLink
+    });
+
+    const hotelId = hotel.id;
+
+    // 🔹 2. Create TypeRooms
+    const createdRooms = await Promise.all(roomType.map((room) =>
+      TypeRoom.create({
+        id_hotel: hotelId,
+        name: room.label,
+        extrabed_price: extrabed.find(e => e.idRoom === room.idRoom)?.price || null,
+        contract_limit: contractUntil.find(c => c.idRoom === room.idRoom)?.valid || null
+      })
+    ));
+
+    // 🔹 3. Map idRoom → real database id
+    const roomMap = createdRooms.reduce((acc, curr, index) => {
+      acc[roomType[index].idRoom] = curr.id;
+      return acc;
+    }, {});
+
+    // 🔹 4. Insert Seasons
+    const normalList = seasons.normal.map(n => ({
+      id_hotel: hotelId,
+      id_tipe_room: roomMap[n.idRoom],
+      price: n.price
+    }));
+
+    const highList = seasons.high.map(h => ({
+      id_hotel: hotelId,
+      id_tipe_room: roomMap[h.idRoom],
+      name: h.label,
+      price: h.price
+    }));
+
+    const peakList = seasons.peak.map(p => ({
+      id_hotel: hotelId,
+      id_tipe_room: roomMap[p.idRoom],
+      name: p.label,
+      price: p.price
+    }));
+
+    await NormalSeason.bulkCreate(normalList);
+    await HighSeason.bulkCreate(highList);
+    await PeakSeason.bulkCreate(peakList);
+
+    formatResponse(res, 201, 'Hotel and related data created successfully', {
+      hotel,
+      roomCount: createdRooms.length,
+      seasonCount: {
+        normal: normalList.length,
+        high: highList.length,
+        peak: peakList.length
+      }
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: err.message });
+  }
+};
+
 // 🔹 Get All Hotels
 const getAllHotelsFull = async (req, res) => {
   try {
@@ -138,5 +216,6 @@ module.exports = {
   getHotelById,
   updateHotel,
   deleteHotel,
-  getAllHotelsFull
+  getAllHotelsFull,
+  createFullHotel
 };

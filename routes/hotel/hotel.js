@@ -7,7 +7,8 @@ const {
     getHotelById,
     updateHotel,
     deleteHotel,
-    getAllHotelsFull
+    getAllHotelsFull,
+    createFullHotel
 } = require('../../controllers/hotel/hotelControllers');
 
 
@@ -18,5 +19,6 @@ router.get('/:id', getHotelById);          // Get hotel by ID
 router.put('/:id', updateHotel);           // Update hotel
 router.delete('/:id', deleteHotel);        // Delete hotel
 router.get('/full/all', getAllHotelsFull); // Get all hotels with full season + room data
+router.post('/create-full', createFullHotel);
 
 module.exports = router;
