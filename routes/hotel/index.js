@@ -9,10 +9,10 @@ const normalSeasonRoutes = require('./normalSeason');
 const peakSeasonRoutes = require('./peakSeason');
 
 // Mount ke dalam router
-router.use('/', hotelRoutes);                   // /api/hotels/
 router.use('/rooms', typeRoomRoutes);           // /api/hotels/rooms
 router.use('/high-seasons', highSeasonRoutes);  // /api/hotels/high-seasons
 router.use('/normal-seasons', normalSeasonRoutes); // /api/hotels/normal-seasons
 router.use('/peak-seasons', peakSeasonRoutes);  // /api/hotels/peak-seasons
+router.use('/', hotelRoutes);                   // /api/hotels/
 
 module.exports = router;
