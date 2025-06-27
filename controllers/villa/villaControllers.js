@@ -116,7 +116,16 @@ const createVillaFull = async (req, res) => {
       ));
     }
 
-    formatResponse(res, 201, "Villa created with full data", null);
+    formatResponse(res, 201, "Villa created with full data", {
+      villa: newVilla,
+      roomCount: roomType.length,
+      seasonsCount: {
+        normal: seasons.normal.length || 0,
+        high: seasons.high.length || 0,
+        peak: seasons.peak.length || 0,
+        honeymoon: seasons.honeymoon?.length || 0
+      }
+    });
   } catch (err) {
     formatResponse(res, 500, err.message, null);
   }
