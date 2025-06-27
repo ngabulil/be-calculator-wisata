@@ -66,7 +66,7 @@ const createFullHotel = async (req, res) => {
         id_hotel: hotelId,
         name: room.label,
         extrabed_price: extrabed.find(e => e.idRoom === room.idRoom)?.price || null,
-        contract_limit: contractUntil.find(c => c.idRoom === room.idRoom)?.valid || null
+        contract_limit: contractUntil.find(c => c.idRoom === room.idRoom)?.valid || contractUntil.find(c => c.idRoom === room.idRoom)?.value || null
       })
     ));
 

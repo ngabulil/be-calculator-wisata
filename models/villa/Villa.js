@@ -8,7 +8,7 @@ const Villa = sequelize.define('Villa', {
   },
   star: {
     type: DataTypes.INTEGER,
-    allowNull: false,
+    allowNull: true,
   },
   link_photo: {
     type: DataTypes.STRING,

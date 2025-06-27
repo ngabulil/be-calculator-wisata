@@ -73,7 +73,7 @@ const createVillaFull = async (req, res) => {
         name: room.label,
         extrabed_price: extrabedItem?.price || null,
         additional: room.additional || null,
-        contract_limit: contractItem?.valid || null
+        contract_limit: contractItem?.valid || contractItem?.value || null
       });
 
       // ⬇ Season Data
