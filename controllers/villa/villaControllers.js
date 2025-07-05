@@ -1,6 +1,125 @@
 const { Villa, TypeRoom, NormalSeason, HighSeason, PeakSeason, Honeymoon } = require('../../models/villa/index');
 const { formatResponse } = require('../../utils/formatResponse');
 
+const updateVillaFull = async (req, res) => {
+  const { id } = req.params;
+  const {
+    villaName,
+    stars,
+    photoLink,
+    additionalLink,
+    roomType,
+    seasons,
+    extrabed,
+    contractUntil
+  } = req.body;
+
+  const t = await Villa.sequelize.transaction();
+
+  try {
+    // 1. Cari villa
+    const villa = await Villa.findByPk(id, {
+      include: { model: TypeRoom, as: 'rooms' },
+      transaction: t
+    });
+
+    if (!villa) {
+      await t.rollback();
+      return formatResponse(res, 404, 'Villa not found', null);
+    }
+
+    // 2. Update villa utama
+    await villa.update({
+      name: villaName,
+      star: stars,
+      link_photo: photoLink,
+      link_additional: additionalLink
+    }, { transaction: t });
+
+    // 3. Hapus semua data turunan lama
+    for (const room of villa.rooms) {
+      await Promise.all([
+        NormalSeason.destroy({ where: { id_tipe_room_villa: room.id }, transaction: t }),
+        HighSeason.destroy({ where: { id_tipe_room_villa: room.id }, transaction: t }),
+        PeakSeason.destroy({ where: { id_tipe_room_villa: room.id }, transaction: t }),
+        Honeymoon.destroy({ where: { id_tipe_room_villa: room.id }, transaction: t })
+      ]);
+    }
+
+    // 4. Hapus semua type room lama
+    await TypeRoom.destroy({ where: { id_villa: id }, transaction: t });
+
+    // 5. Masukkan ulang semua room dan season baru
+    for (const room of roomType) {
+      const roomId = room.idRoom;
+      const extrabedItem = extrabed.find(r => r.idRoom === roomId);
+      const contractItem = contractUntil.find(r => r.idRoom === roomId);
+
+      const newRoom = await TypeRoom.create({
+        id_villa: id,
+        name: room.label,
+        extrabed_price: extrabedItem?.price || null,
+        additional: room.additional || null,
+        contract_limit: contractItem?.valid || contractItem?.value || null
+      }, { transaction: t });
+
+      const normalItems = seasons.normal.filter(s => s.idRoom === roomId);
+      await Promise.all(normalItems.map(s =>
+        NormalSeason.create({
+          id_villa: id,
+          id_tipe_room_villa: newRoom.id,
+          price: s.price
+        }, { transaction: t })
+      ));
+
+      const highItems = seasons.high.filter(s => s.idRoom === roomId);
+      await Promise.all(highItems.map(s =>
+        HighSeason.create({
+          id_villa: id,
+          id_tipe_room_villa: newRoom.id,
+          name: s.label,
+          price: s.price
+        }, { transaction: t })
+      ));
+
+      const peakItems = seasons.peak.filter(s => s.idRoom === roomId);
+      await Promise.all(peakItems.map(s =>
+        PeakSeason.create({
+          id_villa: id,
+          id_tipe_room_villa: newRoom.id,
+          name: s.label,
+          price: s.price
+        }, { transaction: t })
+      ));
+
+      const honeymoonItems = seasons.honeymoon?.filter(s => s.idRoom === roomId) || [];
+      await Promise.all(honeymoonItems.map(s =>
+        Honeymoon.create({
+          id_villa: id,
+          id_tipe_room_villa: newRoom.id,
+          price: s.price
+        }, { transaction: t })
+      ));
+    }
+
+    await t.commit();
+
+    formatResponse(res, 200, 'Villa and related data updated successfully', {
+      villa_id: id,
+      roomCount: roomType.length,
+      seasonsCount: {
+        normal: seasons.normal.length,
+        high: seasons.high.length,
+        peak: seasons.peak.length,
+        honeymoon: seasons.honeymoon?.length || 0
+      }
+    });
+  } catch (err) {
+    await t.rollback();
+    formatResponse(res, 500, err.message, null);
+  }
+};
+
 // 🔹 Delete Villa
 const deleteVillaFull = async (req, res) => {
   const { id } = req.params;
@@ -282,5 +401,6 @@ module.exports = {
   deleteVilla,
   getAllVillasFull,
   deleteVillaFull,
-  createVillaFull
+  createVillaFull,
+  updateVillaFull
 };

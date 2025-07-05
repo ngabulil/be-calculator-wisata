@@ -3,18 +3,25 @@ const dotenv = require('dotenv');
 const sequelize = require('./config/db');
 const router = require('./routes/routes');
 const cors = require('cors');
-require("./models/index");
+const path = require('path');
+require('./models/index'); // Pastikan ini mendaftarkan semua model
 
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Middleware
 app.use(cors());
 app.use(express.json());
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
+app.use(express.urlencoded({ extended: true }));
 
+// Static folder for PDFs (or other public assets)
+app.use('/', express.static(path.join(__dirname, 'public')));
+
+// API routes
+app.use('/api', router);
+
+// DB Connection + Sync
 sequelize.authenticate()
     .then(() => {
         console.log('✅ Connected to DB via Sequelize');
@@ -27,4 +34,7 @@ sequelize.authenticate()
         console.error('❌ Failed to connect to DB:', err.message);
     });
 
-app.use('/api', router);
+// Server Listen
+app.listen(PORT, () => {
+    console.log(`🚀 Server running on port ${PORT}`);
+});

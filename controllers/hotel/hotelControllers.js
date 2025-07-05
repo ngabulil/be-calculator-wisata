@@ -1,6 +1,107 @@
 const { Hotel, TypeRoom, NormalSeason, HighSeason, PeakSeason } = require('../../models/hotel/index');
 const { formatResponse } = require('../../utils/formatResponse');
 
+const updateFullHotel = async (req, res) => {
+  const {
+    hotelName,
+    stars,
+    photoLink,
+    roomType,
+    seasons,
+    extrabed,
+    contractUntil
+  } = req.body;
+
+  const { id } = req.params;
+
+  const t = await Hotel.sequelize.transaction();
+
+  try {
+    const hotel = await Hotel.findByPk(id, {
+      include: { model: TypeRoom, as: 'rooms' },
+      transaction: t,
+    });
+
+    if (!hotel) {
+      await t.rollback();
+      return formatResponse(res, 404, 'Hotel not found', null);
+    }
+
+    // 🔹 1. Update hotel info
+    await hotel.update({
+      name: hotelName,
+      star: stars,
+      link_photo: photoLink,
+    }, { transaction: t });
+
+    // 🔹 2. Hapus semua TypeRoom dan season terkait
+    for (const room of hotel.rooms) {
+      const roomId = room.id;
+      await NormalSeason.destroy({ where: { id_tipe_room: roomId }, transaction: t });
+      await HighSeason.destroy({ where: { id_tipe_room: roomId }, transaction: t });
+      await PeakSeason.destroy({ where: { id_tipe_room: roomId }, transaction: t });
+    }
+
+    await TypeRoom.destroy({ where: { id_hotel: hotel.id }, transaction: t });
+
+    // 🔹 3. Create ulang TypeRoom
+    const newRooms = await Promise.all(roomType.map((room) =>
+      TypeRoom.create({
+        id_hotel: hotel.id,
+        name: room.label,
+        extrabed_price: extrabed.find(e => e.idRoom === room.idRoom)?.price || null,
+        contract_limit: contractUntil.find(c => c.idRoom === room.idRoom)?.valid || contractUntil.find(c => c.idRoom === room.idRoom)?.value || null,
+      }, { transaction: t })
+    ));
+
+    const roomMap = newRooms.reduce((acc, curr, index) => {
+      acc[roomType[index].idRoom] = curr.id;
+      return acc;
+    }, {});
+
+    // 🔹 4. Create ulang season
+    const normalList = seasons.normal.map(n => ({
+      id_hotel: hotel.id,
+      id_tipe_room: roomMap[n.idRoom],
+      price: n.price,
+    }));
+
+    const highList = seasons.high.map(h => ({
+      id_hotel: hotel.id,
+      id_tipe_room: roomMap[h.idRoom],
+      name: h.label,
+      price: h.price,
+    }));
+
+    const peakList = seasons.peak.map(p => ({
+      id_hotel: hotel.id,
+      id_tipe_room: roomMap[p.idRoom],
+      name: p.label,
+      price: p.price,
+    }));
+
+    await NormalSeason.bulkCreate(normalList, { transaction: t });
+    await HighSeason.bulkCreate(highList, { transaction: t });
+    await PeakSeason.bulkCreate(peakList, { transaction: t });
+
+    await t.commit();
+
+    formatResponse(res, 200, 'Hotel and related data updated successfully', {
+      hotel_id: hotel.id,
+      roomCount: newRooms.length,
+      seasonCount: {
+        normal: normalList.length,
+        high: highList.length,
+        peak: peakList.length
+      }
+    });
+  } catch (err) {
+    await t.rollback();
+    console.error(err);
+    formatResponse(res, 500, err.message, null);
+  }
+};
+
 // Delete Full Hotel
 const deleteHotelFull = async (req, res) => {
   try {
@@ -255,5 +356,6 @@ module.exports = {
   deleteHotel,
   getAllHotelsFull,
   createFullHotel,
-  deleteHotelFull
+  deleteHotelFull,
+  updateFullHotel
 };

@@ -191,6 +191,81 @@ const deleteMobil = async (req, res) => {
     }
 };
 
+const updateFullMobil = async (req, res) => {
+    const t = await Mobil.sequelize.transaction();
+    try {
+        const { id } = req.params;
+        const { name, vendor, vendor_link, keterangan } = req.body;
+
+        if (!keterangan) {
+            await t.rollback();
+            return formatResponse(res, 400, 'Keterangan tidak boleh kosong', null);
+        }
+
+        const mobil = await Mobil.findByPk(id);
+        if (!mobil) {
+            await t.rollback();
+            return formatResponse(res, 404, 'Mobil not found', null);
+        }
+
+        // Update data utama mobil
+        await mobil.update({ name, vendor, vendor_link }, { transaction: t });
+
+        // Hapus semua data turunan
+        await Promise.all([
+            Fullday.destroy({ where: { id_mobil: id }, transaction: t }),
+            Halfday.destroy({ where: { id_mobil: id }, transaction: t }),
+            Inout.destroy({ where: { id_mobil: id }, transaction: t }),
+            Menginap.destroy({ where: { id_mobil: id }, transaction: t }),
+        ]);
+
+        // Insert ulang data turunan
+        const { fullDay, halfDay, inOut, menginap } = keterangan;
+
+        if (Array.isArray(fullDay)) {
+            const data = fullDay.map(item => ({
+                id_mobil: id,
+                area_name: item.area,
+                price: item.price
+            }));
+            await Fullday.bulkCreate(data, { transaction: t });
+        }
+
+        if (Array.isArray(halfDay)) {
+            const data = halfDay.map(item => ({
+                id_mobil: id,
+                area_name: item.area,
+                price: item.price
+            }));
+            await Halfday.bulkCreate(data, { transaction: t });
+        }
+
+        if (Array.isArray(inOut)) {
+            const data = inOut.map(item => ({
+                id_mobil: id,
+                area_name: item.area,
+                price: item.price
+            }));
+            await Inout.bulkCreate(data, { transaction: t });
+        }
+
+        if (Array.isArray(menginap)) {
+            const data = menginap.map(item => ({
+                id_mobil: id,
+                area_name: 'Trip Bali Area( Menginap)',
+                price: item.price
+            }));
+            await Menginap.bulkCreate(data, { transaction: t });
+        }
+
+        await t.commit();
+        formatResponse(res, 200, 'Mobil dan seluruh harga berhasil diupdate', { id });
+    } catch (error) {
+        await t.rollback();
+        formatResponse(res, 500, error.message, null);
+    }
+};
+
 module.exports = {
     createMobil,
     getAllMobil,
@@ -199,5 +274,6 @@ module.exports = {
     deleteMobil,
     createFullMobil,
     getAllMobilFull,
-    deleteFullMobil
+    deleteFullMobil,
+    updateFullMobil
 };
