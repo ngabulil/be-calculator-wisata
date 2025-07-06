@@ -9,7 +9,8 @@ const {
     deleteVilla,
     getAllVillasFull,
     createVillaFull,
-    deleteVillaFull
+    deleteVillaFull,
+    updateVillaFull
 } = require('../../controllers/villa/villaControllers');
 
 
@@ -19,6 +20,7 @@ router.get('/', getAllVillas);             // Get all Villas
 router.get('/full', getAllVillasFull); // Get all Villas with full season + room data
 router.post('/full', createVillaFull);
 router.delete('/full/:id', deleteVillaFull);
+router.put('/full/:id', updateVillaFull);
 router.get('/:id', getVillaById);          // Get Villa by ID
 router.put('/:id', updateVilla);           // Update Villa
 router.delete('/:id', deleteVilla);        // Delete Villa

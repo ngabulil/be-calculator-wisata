@@ -9,7 +9,8 @@ const {
     deleteHotel,
     getAllHotelsFull,
     createFullHotel,
-    deleteHotelFull
+    deleteHotelFull,
+    updateFullHotel
 } = require('../../controllers/hotel/hotelControllers');
 
 
@@ -19,6 +20,7 @@ router.get('/', getAllHotels);             // Get all hotels
 router.get('/full', getAllHotelsFull); // Get all hotels with full season + room data
 router.post('/full', createFullHotel);
 router.delete('/full/:id', deleteHotelFull);
+router.put('/full/:id', updateFullHotel);
 router.get('/:id', getHotelById);          // Get hotel by ID
 router.put('/:id', updateHotel);           // Update hotel
 router.delete('/:id', deleteHotel);        // Delete hotel

@@ -3,7 +3,11 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon index.js"
+    "dev": "nodemon index.js",
+    "drop": "npx sequelize-cli db:drop",
+    "create": "npx sequelize-cli db:create",
+    "sync": "node scripts/sync-db.js",
+    "seed": "npx sequelize-cli db:seed:all"
   },
   "keywords": [],
   "author": "",

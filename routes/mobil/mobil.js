@@ -9,7 +9,8 @@ const {
   deleteMobil,
   getAllMobilFull,
   createFullMobil,
-  deleteFullMobil
+  deleteFullMobil,
+  updateFullMobil
 } = require('../../controllers/mobil/mobilControllers');
 
 // CRUD Routes
@@ -18,6 +19,7 @@ router.get('/', getAllMobil);              // Get all mobil
 router.get('/full', getAllMobilFull);      // Get mobil + full harga
 router.post('/full', createFullMobil);     // Create mobil + semua harga
 router.delete('/full/:id', deleteFullMobil); // Delete mobil + semua harga
+router.put('/full/:id', updateFullMobil);  // Update mobil + semua harga
 router.get('/:id', getMobilById);          // Get mobil by ID
 router.put('/:id', updateMobil);           // Update mobil
 router.delete('/:id', deleteMobil);        // Delete mobil only
