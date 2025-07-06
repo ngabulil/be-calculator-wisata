@@ -96,10 +96,12 @@ module.exports = {
           paket_day_id,
           id_mobil: 1,
           keterangan: 'fullday',
+          id_area: 1,
           createdAt: new Date(),
           updatedAt: new Date()
         }
       ], { transaction: t });
+
 
       await queryInterface.bulkInsert('paket_transport_additional', [
         {

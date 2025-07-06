@@ -5,10 +5,10 @@ const getAllMobilFull = async (req, res) => {
     try {
         const data = await Mobil.findAll({
             include: [
-                { model: Fullday, as: 'fullday', attributes: ['area_name', 'price'] },
-                { model: Halfday, as: 'halfday', attributes: ['area_name', 'price'] },
-                { model: Inout, as: 'inout', attributes: ['area_name', 'price'] },
-                { model: Menginap, as: 'menginap', attributes: ['area_name', 'price'] },
+                { model: Fullday, as: 'fullday', attributes: ['id', 'area_name', 'price'] },
+                { model: Halfday, as: 'halfday', attributes: ['id', 'area_name', 'price'] },
+                { model: Inout, as: 'inout', attributes: ['id', 'area_name', 'price'] },
+                { model: Menginap, as: 'menginap', attributes: ['id', 'area_name', 'price'] },
             ],
             order: [['id', 'ASC']],
         });
@@ -20,18 +20,22 @@ const getAllMobilFull = async (req, res) => {
             vendor_link: mobil.vendor_link,
             keterangan: {
                 fullDay: mobil.fullday.map((item) => ({
+                    id_area: item.id,  // gunakan id sebagai id_area
                     area: item.area_name,
                     price: item.price,
                 })),
                 halfDay: mobil.halfday.map((item) => ({
+                    id_area: item.id,
                     area: item.area_name,
                     price: item.price,
                 })),
                 inOut: mobil.inout.map((item) => ({
+                    id_area: item.id,
                     area: item.area_name,
                     price: item.price,
                 })),
                 menginap: mobil.menginap.map((item) => ({
+                    id_area: item.id,
                     area: item.area_name,
                     price: item.price,
                 })),
@@ -43,6 +47,7 @@ const getAllMobilFull = async (req, res) => {
         formatResponse(res, 500, error.message, null);
     }
 };
+
 
 const createFullMobil = async (req, res) => {
     const t = await Mobil.sequelize.transaction();

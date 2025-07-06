@@ -281,12 +281,15 @@ const getAllVillasFull = async (req, res) => {
           normal: villa.rooms.flatMap(room =>
             room.normalseasons.map(ns => ({
               idRoom: room.id,
-              price: ns.price,
+              idMusim: ns.id,
+              label: "Normal", // ✅ Tambahkan label
+              price: ns.price
             }))
           ),
           high: villa.rooms.flatMap(room =>
             room.highseasons.map(hs => ({
               idRoom: room.id,
+              idMusim: hs.id,
               label: hs.name,
               price: hs.price
             }))
@@ -294,6 +297,7 @@ const getAllVillasFull = async (req, res) => {
           peak: villa.rooms.flatMap(room =>
             room.peakseasons.map(ps => ({
               idRoom: room.id,
+              idMusim: ps.id,
               label: ps.name,
               price: ps.price
             }))
@@ -301,6 +305,8 @@ const getAllVillasFull = async (req, res) => {
           honeymoon: villa.rooms.flatMap(room =>
             room.honeymoons.map(hs => ({
               idRoom: room.id,
+              idMusim: hs.id,
+              label: hs.name || "Honeymoon", // ✅ Tambahkan label jika ada
               price: hs.price
             }))
           )
@@ -325,6 +331,7 @@ const getAllVillasFull = async (req, res) => {
     formatResponse(res, 500, err.message, null);
   }
 };
+
 
 // 🔹 Create Villa
 const createVilla = async (req, res) => {

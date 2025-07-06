@@ -14,6 +14,10 @@ const PaketTransportMobil = sequelize.define('PaketTransportMobil', {
     type: DataTypes.ENUM('fullday', 'halfday', 'inout', 'menginap'),
     allowNull: false,
   },
+  id_area: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
 }, {
   tableName: 'paket_transport_mobil',
   timestamps: true,

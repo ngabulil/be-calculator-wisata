@@ -238,36 +238,44 @@ const getAllHotelsFull = async (req, res) => {
         hotelName: hotel.name,
         stars: hotel.star,
         photoLink: hotel.link_photo,
+
         roomType: hotel.rooms.map(room => ({
           idRoom: room.id,
           label: room.name
         })),
+
         seasons: {
           normal: hotel.rooms.flatMap(room =>
             room.normalseasons.map(ns => ({
               idRoom: room.id,
               price: ns.price,
+              idMusim: ns.id,              // penting: ID musim
+              label: "Normal"              // optional label (jaga konsistensi frontend)
             }))
           ),
           high: hotel.rooms.flatMap(room =>
             room.highseasons.map(hs => ({
               idRoom: room.id,
               label: hs.name,
-              price: hs.price
+              price: hs.price,
+              idMusim: hs.id               // penting: ID musim
             }))
           ),
           peak: hotel.rooms.flatMap(room =>
             room.peakseasons.map(ps => ({
               idRoom: room.id,
               label: ps.name,
-              price: ps.price
+              price: ps.price,
+              idMusim: ps.id               // penting: ID musim
             }))
           )
         },
+
         extrabed: hotel.rooms.map(room => ({
           idRoom: room.id,
           price: room.extrabed_price
         })),
+
         contractUntil: hotel.rooms.map(room => ({
           idRoom: room.id,
           valid: room.contract_limit
@@ -280,6 +288,7 @@ const getAllHotelsFull = async (req, res) => {
     formatResponse(res, 500, err.message, null);
   }
 };
+
 
 // 🔹 Create Hotel
 const createHotel = async (req, res) => {
