@@ -1,4 +1,4 @@
-const { HighSeason, Hotel, TypeRoom } = require('../../models/villa/index');
+const { HighSeason, Hotel, TypeRoom } = require('../../models/hotel/index');
 const { formatResponse } = require('../../utils/formatResponse');
 
 // 🔹 Create
