@@ -140,7 +140,8 @@ const createFullPackage = async (req, res) => {
         ...(data.transport?.mobils || []).map(mobil => PaketTransportMobil.create({
           paket_day_id: newDay.id,
           id_mobil: mobil.id_mobil,
-          keterangan: mobil.keterangan
+          keterangan: mobil.keterangan,
+          id_area: mobil.id_area
         }, { transaction: t })),
 
         ...(data.transport?.additional || []).map(add => PaketTransportAdditional.create({
@@ -278,7 +279,8 @@ const updateFullPackage = async (req, res) => {
         ...(data.transport?.mobils || []).map(m => PaketTransportMobil.create({
           paket_day_id: newDay.id,
           id_mobil: m.id_mobil,
-          keterangan: m.keterangan
+          keterangan: m.keterangan,
+          id_area: m.id_area
         }, { transaction: t })),
 
         ...(data.transport?.additional || []).map(a => PaketTransportAdditional.create({
