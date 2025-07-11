@@ -134,7 +134,8 @@ const createFullPackage = async (req, res) => {
         ...(data.tour?.restaurants || []).map(resto => PaketRestoran.create({
           paket_day_id: newDay.id,
           id_resto: resto.id_resto,
-          id_menu: resto.id_menu
+          id_menu: resto.id_menu,
+          type_wisata: resto.type_wisata
         }, { transaction: t })),
 
         ...(data.transport?.mobils || []).map(mobil => PaketTransportMobil.create({
@@ -273,7 +274,8 @@ const updateFullPackage = async (req, res) => {
         ...(data.tour?.restaurants || []).map(r => PaketRestoran.create({
           paket_day_id: newDay.id,
           id_resto: r.id_resto,
-          id_menu: r.id_menu
+          id_menu: r.id_menu,
+          type_wisata: r.type_wisata
         }, { transaction: t })),
 
         ...(data.transport?.mobils || []).map(m => PaketTransportMobil.create({

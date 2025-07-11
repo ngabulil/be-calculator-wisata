@@ -14,6 +14,10 @@ const PaketRestoran = sequelize.define('PaketRestoran', {
     type: DataTypes.INTEGER,
     allowNull: false,
   },
+  type_wisata: {
+    type: DataTypes.ENUM('domestik', 'asing'),
+    allowNull: false,
+  },
 }, {
   tableName: 'paket_restoran',
   timestamps: true,

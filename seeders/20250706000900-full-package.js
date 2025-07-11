@@ -85,6 +85,7 @@ module.exports = {
           paket_day_id,
           id_resto: 1,
           id_menu: 1,
+          type_wisata: 'asing',
           createdAt: new Date(),
           updatedAt: new Date()
         }
