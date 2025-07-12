@@ -13,17 +13,20 @@ const {
   deleteFullPackage
 } = require('../../controllers/paket/paketControllers');
 
-// FULL Paket
-router.post('/full', createFullPackage);           // Create full paket (nested)
-router.get('/full', getAllFullPackages);       // Get all full paket
-router.put('/full/:id', updateFullPackage);        // Update full paket
-router.delete('/full/:id', deleteFullPackage);     // Delete full paket
+const auth = require('../../middlewares/authMiddleware'); // JWT auth
 
-// CRUD Paket Biasa
-router.post('/', createPackage);           // Create Paket
-router.get('/', getAllPackages);           // Get All Paket
-router.get('/:id', getPackageById);        // Get Paket by ID
-router.put('/:id', updatePackage);         // Update Paket
-router.delete('/:id', deletePackage);      // Delete Paket
+// ✅ PUBLIC ROUTES
+router.get('/full', getAllFullPackages);       // Get all full paket
+router.get('/', getAllPackages);               // Get all simple paket
+router.get('/:id', getPackageById);            // Get paket by ID
+
+// 🔒 PROTECTED ROUTES
+router.post('/full', auth, createFullPackage);           // Create full paket
+router.put('/full/:id', auth, updateFullPackage);        // Update full paket
+router.delete('/full/:id', auth, deleteFullPackage);     // Delete full paket
+
+router.post('/', auth, createPackage);           // Create simple paket
+router.put('/:id', auth, updatePackage);         // Update simple paket
+router.delete('/:id', auth, deletePackage);      // Delete simple paket
 
 module.exports = router;

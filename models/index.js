@@ -8,6 +8,7 @@ const ModelsRestoran = require('./restaurant/index');
 const ModelsActivity = require('./activity/index');
 const ModelsTiketMasuk = require('./tiketMasuk/index');
 const ModelsPesanan = require('./pesanan/index');
+const ModelsAdmin = require('./admin/index');
 
 module.exports = {
     ModelsHotel,
@@ -19,5 +20,6 @@ module.exports = {
     ModelsRestoran,
     ModelsActivity,
     ModelsTiketMasuk,
-    ModelsPesanan
+    ModelsPesanan,
+    ModelsAdmin
 }

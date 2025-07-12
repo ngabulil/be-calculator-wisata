@@ -9,11 +9,15 @@ const {
   getAllPackageRestos,
 } = require('../../controllers/restaurant/packageRestoControllers');
 
-// CRUD Routes for PackageResto
-router.post('/', createPackageResto);            // Create new package
-router.get('/', getAllPackageRestos);            // Get all packages
-router.get('/:id', getPackageRestoById);         // Get package by ID
-router.put('/:id', updatePackageResto);          // Update package
-router.delete('/:id', deletePackageResto);       // Delete package
+const auth = require('../../middlewares/authMiddleware'); // JWT middleware
+
+// ✅ PUBLIC ROUTES
+router.get('/', getAllPackageRestos);            // Get all package restos
+router.get('/:id', getPackageRestoById);         // Get by ID
+
+// 🔒 PROTECTED ROUTES
+router.post('/', auth, createPackageResto);      // Create new package
+router.put('/:id', auth, updatePackageResto);    // Update package
+router.delete('/:id', auth, deletePackageResto); // Delete package
 
 module.exports = router;

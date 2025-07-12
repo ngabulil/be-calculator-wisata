@@ -9,11 +9,15 @@ const {
   deleteNormalSeason
 } = require('../../controllers/villa/normalSeasonController');
 
-// CRUD NormalSeason
-router.post('/', addNormalSeason);               // Create normal season
+const auth = require('../../middlewares/authMiddleware'); // JWT auth middleware
+
+// ✅ PUBLIC ROUTES
 router.get('/', getAllNormalSeasons);            // Get all normal seasons
-router.get('/:id', getNormalSeasonById);         // Get normal season by ID
-router.put('/:id', updateNormalSeason);          // Update normal season
-router.delete('/:id', deleteNormalSeason);       // Delete normal season
+router.get('/:id', getNormalSeasonById);         // Get by ID
+
+// 🔒 PROTECTED ROUTES
+router.post('/', auth, addNormalSeason);         // Create
+router.put('/:id', auth, updateNormalSeason);    // Update
+router.delete('/:id', auth, deleteNormalSeason); // Delete
 
 module.exports = router;

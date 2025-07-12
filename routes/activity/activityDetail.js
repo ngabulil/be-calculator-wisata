@@ -9,11 +9,15 @@ const {
   deleteActivityDetail
 } = require('../../controllers/activity/activityDetailControllers');
 
-// CRUD Routes untuk detail aktivitas (per item aktivitas dari vendor)
-router.post('/', createActivityDetail);            // Create activity detail
-router.get('/', getAllActivityDetails);            // Get all activity details
-router.get('/:id', getActivityDetailById);         // Get activity detail by ID
-router.put('/:id', updateActivityDetail);          // Update activity detail
-router.delete('/:id', deleteActivityDetail);       // Delete activity detail
+const auth = require('../../middlewares/authMiddleware'); // JWT auth
+
+// ✅ PUBLIC ROUTES
+router.get('/', getAllActivityDetails);           // Get all activity details
+router.get('/:id', getActivityDetailById);        // Get activity detail by ID
+
+// 🔒 PROTECTED ROUTES
+router.post('/', auth, createActivityDetail);     // Create activity detail
+router.put('/:id', auth, updateActivityDetail);   // Update activity detail
+router.delete('/:id', auth, deleteActivityDetail);// Delete activity detail
 
 module.exports = router;

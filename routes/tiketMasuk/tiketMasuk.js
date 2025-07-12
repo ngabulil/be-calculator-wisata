@@ -1,18 +1,23 @@
 const express = require('express');
 const router = express.Router();
+
 const {
   createTiketMasuk,
   updateTiketMasuk,
   deleteTiketMasuk,
   getTiketMasukById,
-  getAllTiketMasuk,
+  getAllTiketMasuk
 } = require('../../controllers/tiketMasuk/tiketMasukController');
 
-// CRUD Routes
-router.post('/', createTiketMasuk);         // Create Tiket Masuk
-router.get('/', getAllTiketMasuk);          // Get all Tiket Masuk
-router.get('/:id', getTiketMasukById);      // Get Tiket Masuk by ID
-router.put('/:id', updateTiketMasuk);       // Update Tiket Masuk
-router.delete('/:id', deleteTiketMasuk);    // Delete Tiket Masuk
+const auth = require('../../middlewares/authMiddleware'); // JWT auth
+
+// ✅ PUBLIC ROUTES
+router.get('/', getAllTiketMasuk);           // Get all tickets
+router.get('/:id', getTiketMasukById);       // Get ticket by ID
+
+// 🔒 PROTECTED ROUTES
+router.post('/', auth, createTiketMasuk);    // Create ticket
+router.put('/:id', auth, updateTiketMasuk);  // Update ticket
+router.delete('/:id', auth, deleteTiketMasuk); // Delete ticket
 
 module.exports = router;

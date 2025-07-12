@@ -13,17 +13,20 @@ const {
   updateFullResto
 } = require('../../controllers/restaurant/restaurantControllers');
 
-// 🟡 Full data (dengan packages)
-router.get('/full', getAllRestoFull);     // Get semua restoran + packages
-router.post('/full', createFullResto);        // Create restoran + packages
-router.put('/full/:id', updateFullResto);     // Update restoran + packages
-router.delete('/full/:id', deleteFullResto);  // Delete restoran + packages
+const auth = require('../../middlewares/authMiddleware'); // JWT middleware
 
-// 🟢 CRUD sederhana
-router.post('/', createRestaurant);           // Create restoran
-router.get('/', getAllRestaurants);           // Get semua restoran
-router.get('/:id', getRestaurantById);        // Get restoran by ID
-router.put('/:id', updateRestaurant);         // Update restoran
-router.delete('/:id', deleteRestaurant);      // Delete restoran
+// ✅ PUBLIC ROUTES
+router.get('/full', getAllRestoFull);            // Get all restaurants with packages
+router.get('/', getAllRestaurants);              // Get simple list
+router.get('/:id', getRestaurantById);           // Get by ID
+
+// 🔒 PROTECTED ROUTES
+router.post('/full', auth, createFullResto);     // Create full resto
+router.put('/full/:id', auth, updateFullResto);  // Update full resto
+router.delete('/full/:id', auth, deleteFullResto); // Delete full resto
+
+router.post('/', auth, createRestaurant);        // Create simple resto
+router.put('/:id', auth, updateRestaurant);      // Update simple resto
+router.delete('/:id', auth, deleteRestaurant);   // Delete simple resto
 
 module.exports = router;

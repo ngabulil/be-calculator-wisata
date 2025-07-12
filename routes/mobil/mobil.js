@@ -13,15 +13,20 @@ const {
   updateFullMobil
 } = require('../../controllers/mobil/mobilControllers');
 
-// CRUD Routes
-router.post('/', createMobil);              // Create mobil
-router.get('/', getAllMobil);              // Get all mobil
-router.get('/full', getAllMobilFull);      // Get mobil + full harga
-router.post('/full', createFullMobil);     // Create mobil + semua harga
-router.delete('/full/:id', deleteFullMobil); // Delete mobil + semua harga
-router.put('/full/:id', updateFullMobil);  // Update mobil + semua harga
-router.get('/:id', getMobilById);          // Get mobil by ID
-router.put('/:id', updateMobil);           // Update mobil
-router.delete('/:id', deleteMobil);        // Delete mobil only
+const auth = require('../../middlewares/authMiddleware'); // JWT middleware
+
+// ✅ PUBLIC ROUTES
+router.get('/', getAllMobil);                 // Get all mobil
+router.get('/full', getAllMobilFull);         // Get full mobil + harga
+router.get('/:id', getMobilById);             // Get mobil by ID
+
+// 🔒 PROTECTED ROUTES
+router.post('/', auth, createMobil);          // Create mobil only
+router.post('/full', auth, createFullMobil);  // Create mobil + harga
+router.put('/full/:id', auth, updateFullMobil);
+router.delete('/full/:id', auth, deleteFullMobil);
+
+router.put('/:id', auth, updateMobil);        // Update mobil only
+router.delete('/:id', auth, deleteMobil);     // Delete mobil only
 
 module.exports = router;

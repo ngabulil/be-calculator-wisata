@@ -9,10 +9,15 @@ const {
   deleteHalfday
 } = require('../../controllers/mobil/halfdayControllers');
 
-router.post('/', createHalfday);
-router.get('/', getAllHalfday);
-router.get('/:id', getHalfdayById);
-router.put('/:id', updateHalfday);
-router.delete('/:id', deleteHalfday);
+const auth = require('../../middlewares/authMiddleware'); // JWT middleware
+
+// ✅ PUBLIC ROUTES
+router.get('/', getAllHalfday);              // Get all halfday
+router.get('/:id', getHalfdayById);          // Get halfday by ID
+
+// 🔒 PROTECTED ROUTES
+router.post('/', auth, createHalfday);       // Create halfday
+router.put('/:id', auth, updateHalfday);     // Update halfday
+router.delete('/:id', auth, deleteHalfday);  // Delete halfday
 
 module.exports = router;

@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+
 const {
   createTypeRoom,
   getAllTypeRooms,
@@ -8,11 +9,15 @@ const {
   deleteTypeRoom
 } = require('../../controllers/villa/typeRoomControllers');
 
-// CRUD TypeRoom
-router.post('/', createTypeRoom);             // Create type room
+const auth = require('../../middlewares/authMiddleware'); // JWT auth middleware
+
+// ✅ PUBLIC ROUTES
 router.get('/', getAllTypeRooms);             // Get all type rooms
 router.get('/:id', getTypeRoomById);          // Get type room by ID
-router.put('/:id', updateTypeRoom);           // Update type room
-router.delete('/:id', deleteTypeRoom);        // Delete type room
+
+// 🔒 PROTECTED ROUTES
+router.post('/', auth, createTypeRoom);       // Create
+router.put('/:id', auth, updateTypeRoom);     // Update
+router.delete('/:id', auth, deleteTypeRoom);  // Delete
 
 module.exports = router;

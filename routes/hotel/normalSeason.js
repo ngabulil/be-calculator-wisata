@@ -9,11 +9,15 @@ const {
   deleteNormalSeason
 } = require('../../controllers/hotel/normalSeasonController');
 
-// CRUD NormalSeason
-router.post('/', addNormalSeason);               // Create normal season
-router.get('/', getAllNormalSeasons);            // Get all normal seasons
-router.get('/:id', getNormalSeasonById);         // Get normal season by ID
-router.put('/:id', updateNormalSeason);          // Update normal season
-router.delete('/:id', deleteNormalSeason);       // Delete normal season
+const auth = require('../../middlewares/authMiddleware'); // JWT auth
+
+// PUBLIC ROUTES
+router.get('/', getAllNormalSeasons);             // Anyone can view list
+router.get('/:id', getNormalSeasonById);          // Anyone can view detail
+
+// PROTECTED ROUTES
+router.post('/', auth, addNormalSeason);          // Must be logged in
+router.put('/:id', auth, updateNormalSeason);     // Must be logged in
+router.delete('/:id', auth, deleteNormalSeason);  // Must be logged in
 
 module.exports = router;

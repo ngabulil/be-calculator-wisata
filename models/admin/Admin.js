@@ -1,28 +1,28 @@
-// models/pesanan.js
 const { DataTypes } = require('sequelize');
 const sequelize = require('../../config/db');
 
-const Pesanan = sequelize.define('Pesanan', {
-  kode_pesanan: {
+const Admin = sequelize.define('Admin', {
+  username: {
     type: DataTypes.STRING,
     allowNull: false,
     unique: true
   },
-  invoice_pdf: {
+  password: {
     type: DataTypes.STRING,
-    allowNull: true
-  },
-  itinerary_pdf: {
-    type: DataTypes.STRING,
-    allowNull: true
-  },
-  id_admin: {
-    type: DataTypes.INTEGER,
     allowNull: false
+  },
+  name: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
+  role: {
+    type: DataTypes.ENUM('super_admin', 'admin'),
+    allowNull: false,
+    defaultValue: 'admin'
   }
 }, {
-  tableName: 'pesanan',
+  tableName: 'admin',
   timestamps: true
 });
 
-module.exports = Pesanan;
+module.exports = Admin;

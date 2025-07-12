@@ -9,11 +9,15 @@ const {
   deletePeakSeason
 } = require('../../controllers/hotel/peakSeasonController');
 
-// CRUD PeakSeason
-router.post('/', addPeakSeason);               // Create peak season
-router.get('/', getAllPeakSeasons);            // Get all peak seasons
-router.get('/:id', getPeakSeasonById);         // Get peak season by ID
-router.put('/:id', updatePeakSeason);          // Update peak season
-router.delete('/:id', deletePeakSeason);       // Delete peak season
+const auth = require('../../middlewares/authMiddleware'); // JWT middleware
+
+// PUBLIC ROUTES
+router.get('/', getAllPeakSeasons);            // Anyone can view list
+router.get('/:id', getPeakSeasonById);         // Anyone can view by ID
+
+// PROTECTED ROUTES
+router.post('/', auth, addPeakSeason);         // Must be logged in
+router.put('/:id', auth, updatePeakSeason);    // Must be logged in
+router.delete('/:id', auth, deletePeakSeason); // Must be logged in
 
 module.exports = router;

@@ -9,10 +9,15 @@ const {
   deleteInout
 } = require('../../controllers/mobil/inoutControllers');
 
-router.post('/', createInout);
-router.get('/', getAllInout);
-router.get('/:id', getInoutById);
-router.put('/:id', updateInout);
-router.delete('/:id', deleteInout);
+const auth = require('../../middlewares/authMiddleware'); // JWT middleware
+
+// ✅ PUBLIC ROUTES
+router.get('/', getAllInout);              // Get all inout
+router.get('/:id', getInoutById);          // Get inout by ID
+
+// 🔒 PROTECTED ROUTES
+router.post('/', auth, createInout);       // Create
+router.put('/:id', auth, updateInout);     // Update
+router.delete('/:id', auth, deleteInout);  // Delete
 
 module.exports = router;

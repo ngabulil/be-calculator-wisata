@@ -9,11 +9,15 @@ const {
   deleteFullday
 } = require('../../controllers/mobil/fulldayControllers');
 
-// CRUD Routes
-router.post('/', createFullday);             // Create fullday
-router.get('/', getAllFullday);              // Get all fullday
-router.get('/:id', getFulldayById);          // Get fullday by ID
-router.put('/:id', updateFullday);           // Update fullday
-router.delete('/:id', deleteFullday);        // Delete fullday
+const auth = require('../../middlewares/authMiddleware'); // JWT auth
+
+// ✅ PUBLIC ROUTES
+router.get('/', getAllFullday);             // Anyone can view
+router.get('/:id', getFulldayById);         // Anyone can view detail
+
+// 🔒 PROTECTED ROUTES
+router.post('/', auth, createFullday);      // Must be logged in
+router.put('/:id', auth, updateFullday);    // Must be logged in
+router.delete('/:id', auth, deleteFullday); // Must be logged in
 
 module.exports = router;

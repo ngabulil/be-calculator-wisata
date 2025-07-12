@@ -9,11 +9,15 @@ const {
   deleteHoneymoonSeason
 } = require('../../controllers/villa/honeymoonController');
 
-// CRUD NormalSeason
-router.post('/', addHoneymoonSeason);               // Create honeymoon season
-router.get('/', getAllHoneymoonSeasons);            // Get all honeymoon seasons
-router.get('/:id', getHoneymoonSeasonById);         // Get honeymoon season by ID
-router.put('/:id', updateHoneymoonSeason);          // Update honeymoon season
-router.delete('/:id', deleteHoneymoonSeason);       // Delete honeymoon season
+const auth = require('../../middlewares/authMiddleware'); // JWT auth
+
+// ✅ PUBLIC ROUTES
+router.get('/', getAllHoneymoonSeasons);            // Anyone can view list
+router.get('/:id', getHoneymoonSeasonById);         // Anyone can view detail
+
+// 🔒 PROTECTED ROUTES
+router.post('/', auth, addHoneymoonSeason);         // Must be logged in
+router.put('/:id', auth, updateHoneymoonSeason);    // Must be logged in
+router.delete('/:id', auth, deleteHoneymoonSeason); // Must be logged in
 
 module.exports = router;
