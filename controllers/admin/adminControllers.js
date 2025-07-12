@@ -10,7 +10,7 @@ const createSuperAdmin = async (req, res) => {
   try {
     const { username, password, name } = req.body;
 
-    const hash = await bcrypt.hash(password, 10);
+    const hash = await bcrypt.hash(password, 10);a
     const newAdmin = await Admin.create({
       username,
       password: hash,

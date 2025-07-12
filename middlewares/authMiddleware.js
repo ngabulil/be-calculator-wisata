@@ -5,7 +5,6 @@ const SECRET_KEY = process.env.JWT_SECRET || 'secretkey';
 
 const auth = async (req, res, next) => {
   const authHeader = req.headers.authorization;
-
   // Periksa apakah header Authorization ada dan benar formatnya
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ success: false, message: 'Unauthorized: Token not provided' });
