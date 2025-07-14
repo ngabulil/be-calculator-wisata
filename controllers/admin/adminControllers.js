@@ -5,6 +5,16 @@ const { formatResponse } = require('../../utils/formatResponse');
 
 const SECRET_KEY = process.env.JWT_SECRET || 'secretkey';
 
+// Get User Login
+const getUserLogin = async (req, res) => {
+  try {
+    const user = req.user;
+    formatResponse(res, 200, 'User login', user);
+  } catch (err) {
+    formatResponse(res, 500, err.message, null);
+  }
+};
+
 // CREATE SUPER ADMIN
 const createSuperAdmin = async (req, res) => {
   try {
@@ -166,5 +176,6 @@ module.exports = {
   updateAdmin,
   deleteAdmin,
   getAdminById,
-  getAllAdmins
+  getAllAdmins,
+  getUserLogin
 };
