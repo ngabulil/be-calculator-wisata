@@ -97,7 +97,7 @@ const createFullMobil = async (req, res) => {
         if (Array.isArray(menginap)) {
             const menginapData = menginap.map((item) => ({
                 id_mobil: mobil.id,
-                area_name: 'Trip Bali Area( Menginap)',
+                area_name: item.area,
                 price: item.price,
             }));
             await Menginap.bulkCreate(menginapData, { transaction: t });
@@ -257,7 +257,7 @@ const updateFullMobil = async (req, res) => {
         if (Array.isArray(menginap)) {
             const data = menginap.map(item => ({
                 id_mobil: id,
-                area_name: 'Trip Bali Area( Menginap)',
+                area_name: item.area,
                 price: item.price
             }));
             await Menginap.bulkCreate(data, { transaction: t });

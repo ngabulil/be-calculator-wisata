@@ -3,9 +3,7 @@ const { formatResponse } = require('../../utils/formatResponse');
 
 const createMenginap = async (req, res) => {
   try {
-    const { id_mobil, price } = req.body;
-    const area_name = 'Trip Bali Area( Menginap)';
-
+    const { id_mobil, price, area_name } = req.body;
     const data = await Menginap.create({ id_mobil, area_name, price });
     formatResponse(res, 201, 'Menginap created successfully', data);
   } catch (error) {
@@ -34,11 +32,9 @@ const getMenginapById = async (req, res) => {
 
 const updateMenginap = async (req, res) => {
   try {
-    const { id_mobil, price } = req.body;
+    const { id_mobil, price, area_name } = req.body;
     const data = await Menginap.findByPk(req.params.id);
     if (!data) return formatResponse(res, 404, 'Menginap entry not found', null);
-
-    const area_name = 'Trip Bali Area( Menginap)';
     await data.update({ id_mobil, area_name, price });
     formatResponse(res, 200, 'Menginap updated successfully', data);
   } catch (error) {
