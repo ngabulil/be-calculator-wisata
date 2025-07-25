@@ -6,14 +6,14 @@ const createFullResto = async (req, res) => {
   const t = await Restaurant.sequelize.transaction();
 
   try {
-    const { resto_name, packages } = req.body;
+    const { resto_name, description, packages } = req.body;
 
     if (!resto_name || !Array.isArray(packages) || packages.length === 0) {
       return formatResponse(res, 400, 'Restaurant name and at least one package are required', null);
     }
 
     // Buat restoran
-    const newResto = await Restaurant.create({ name: resto_name }, { transaction: t });
+    const newResto = await Restaurant.create({ name: resto_name, description }, { transaction: t });
 
     // Buat semua package
     const createdPackages = await Promise.all(
@@ -38,6 +38,7 @@ const createFullResto = async (req, res) => {
     formatResponse(res, 201, 'Restaurant and packages created successfully', {
       id: newResto.id,
       resto_name: newResto.name,
+      description: newResto.description,
       packages: createdPackages.map(pkg => ({
         id_package: pkg.id,
         ...pkg.dataValues
@@ -62,6 +63,7 @@ const getAllRestoFull = async (req, res) => {
     const result = restos.map((resto) => ({
       id: resto.id,
       resto_name: resto.name,
+      description: resto.description,
       packages: resto.packages.map((pkg) => ({
         id_package: pkg.id,
         package_name: pkg.name,
@@ -87,8 +89,8 @@ const getAllRestoFull = async (req, res) => {
 // CREATE
 const createRestaurant = async (req, res) => {
   try {
-    const { name } = req.body;
-    const newRestaurant = await Restaurant.create({ name });
+    const { name, description } = req.body;
+    const newRestaurant = await Restaurant.create({ name, description });
     formatResponse(res, 201, 'Restaurant created successfully', newRestaurant);
   } catch (err) {
     formatResponse(res, 500, err.message, null);
@@ -99,11 +101,11 @@ const createRestaurant = async (req, res) => {
 const updateRestaurant = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name } = req.body;
+    const { name, description } = req.body;
     const restaurant = await Restaurant.findByPk(id);
     if (!restaurant) return formatResponse(res, 404, 'Restaurant not found', null);
 
-    await restaurant.update({ name });
+    await restaurant.update({ name, description });
     formatResponse(res, 200, 'Restaurant updated successfully', restaurant);
   } catch (err) {
     formatResponse(res, 500, err.message, null);
@@ -187,7 +189,7 @@ const updateFullResto = async (req, res) => {
 
   try {
     const { id } = req.params;
-    const { resto_name, packages } = req.body;
+    const { resto_name, description, packages } = req.body;
 
     if (!resto_name || !Array.isArray(packages)) {
       return formatResponse(res, 400, 'Restaurant name and packages array are required', null);
@@ -205,7 +207,7 @@ const updateFullResto = async (req, res) => {
     }
 
     // Update nama restoran
-    await resto.update({ name: resto_name }, { transaction: t });
+    await resto.update({ name: resto_name, description }, { transaction: t });
 
     // Hapus semua package lama
     await Promise.all(
@@ -235,6 +237,7 @@ const updateFullResto = async (req, res) => {
     formatResponse(res, 200, 'Restaurant and packages updated successfully', {
       id: resto.id,
       resto_name: resto.name,
+      description: resto.description,
       packages: createdPackages.map(pkg => ({
         id_package: pkg.id,
         ...pkg.dataValues,
@@ -245,8 +248,6 @@ const updateFullResto = async (req, res) => {
     formatResponse(res, 500, err.message, null);
   }
 };
-
-
 
 module.exports = {
   createRestaurant,

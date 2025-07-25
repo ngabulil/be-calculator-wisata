@@ -6,6 +6,7 @@ const createTiketMasuk = async (req, res) => {
   try {
     const {
       name,
+      description,
       price_foreign_adult,
       price_foreign_child,
       price_domestic_adult,
@@ -15,6 +16,7 @@ const createTiketMasuk = async (req, res) => {
 
     const newTiket = await TiketMasuk.create({
       name,
+      description,
       price_foreign_adult,
       price_foreign_child,
       price_domestic_adult,

@@ -21,6 +21,7 @@ const createFullActivity = async (req, res) => {
                 return ActivityDetail.create({
                     vendor_id: newVendor.id,
                     name: activity.name,
+                    description: activity.description,
                     price_foreign_adult: activity.price_foreign_adult,
                     price_foreign_child: activity.price_foreign_child,
                     price_domestic_adult: activity.price_domestic_adult,
@@ -40,6 +41,7 @@ const createFullActivity = async (req, res) => {
             activities: activityList.map((a) => ({
                 activity_id: a.id,
                 name: a.name,
+                description: a.description,
                 price_foreign_adult: a.price_foreign_adult,
                 price_foreign_child: a.price_foreign_child,
                 price_domestic_adult: a.price_domestic_adult,
@@ -72,6 +74,7 @@ const getFullActivity = async (req, res) => {
                 activity_id: act.id,
                 vendor_id: act.vendor_id,
                 name: act.name,
+                description: act.description,
                 price_foreign_adult: act.price_foreign_adult,
                 price_foreign_child: act.price_foreign_child,
                 price_domestic_adult: act.price_domestic_adult,
@@ -186,6 +189,7 @@ const updateFullActivity = async (req, res) => {
         ActivityDetail.create({
           vendor_id: vendor.id,
           name: act.name,
+          description: act.description,
           price_foreign_adult: act.price_foreign_adult,
           price_foreign_child: act.price_foreign_child,
           price_domestic_adult: act.price_domestic_adult,

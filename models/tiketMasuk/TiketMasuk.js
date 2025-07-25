@@ -6,6 +6,10 @@ const TiketMasuk = sequelize.define('TiketMasuk', {
     type: DataTypes.STRING,
     allowNull: false,
   },
+  description: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+  },
   price_foreign_adult: {
     type: DataTypes.INTEGER,
     allowNull: false,

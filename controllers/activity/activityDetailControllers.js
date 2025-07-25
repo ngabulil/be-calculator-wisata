@@ -7,6 +7,7 @@ const createActivityDetail = async (req, res) => {
     const {
       vendor_id,
       name,
+      description,
       price_foreign_adult,
       price_foreign_child,
       price_domestic_adult,
@@ -19,6 +20,7 @@ const createActivityDetail = async (req, res) => {
     const newDetail = await ActivityDetail.create({
       vendor_id,
       name,
+      description,
       price_foreign_adult,
       price_foreign_child,
       price_domestic_adult,
