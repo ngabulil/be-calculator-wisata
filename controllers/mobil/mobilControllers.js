@@ -20,21 +20,25 @@ const getAllMobilFull = async (req, res) => {
             vendor_link: mobil.vendor_link,
             keterangan: {
                 fullDay: mobil.fullday.map((item) => ({
+                    id: item.id,
                     id_area: item.id,  // gunakan id sebagai id_area
                     area: item.area_name,
                     price: item.price,
                 })),
                 halfDay: mobil.halfday.map((item) => ({
+                    id: item.id,
                     id_area: item.id,
                     area: item.area_name,
                     price: item.price,
                 })),
                 inOut: mobil.inout.map((item) => ({
+                    id: item.id,
                     id_area: item.id,
                     area: item.area_name,
                     price: item.price,
                 })),
                 menginap: mobil.menginap.map((item) => ({
+                    id: item.id,
                     id_area: item.id,
                     area: item.area_name,
                     price: item.price,
@@ -207,61 +211,61 @@ const updateFullMobil = async (req, res) => {
             return formatResponse(res, 400, 'Keterangan tidak boleh kosong', null);
         }
 
-        const mobil = await Mobil.findByPk(id);
+        const mobil = await Mobil.findByPk(id, {
+            include: [
+                { model: Fullday, as: 'fullday' },
+                { model: Halfday, as: 'halfday' },
+                { model: Inout, as: 'inout' },
+                { model: Menginap, as: 'menginap' },
+            ],
+            transaction: t,
+        });
+
+
         if (!mobil) {
             await t.rollback();
             return formatResponse(res, 404, 'Mobil not found', null);
         }
 
-        // Update data utama mobil
+        // 🔹 Update data utama mobil
         await mobil.update({ name, vendor, vendor_link }, { transaction: t });
 
-        // Hapus semua data turunan
-        await Promise.all([
-            Fullday.destroy({ where: { id_mobil: id }, transaction: t }),
-            Halfday.destroy({ where: { id_mobil: id }, transaction: t }),
-            Inout.destroy({ where: { id_mobil: id }, transaction: t }),
-            Menginap.destroy({ where: { id_mobil: id }, transaction: t }),
-        ]);
+        // 🔹 Helper update/insert untuk tiap model turunan
+        const syncAreaList = async (Model, alias, mobilId, incomingList, transaction) => {
+            const existing = await Model.findAll({ where: { id_mobil: mobilId }, transaction });
 
-        // Insert ulang data turunan
-        const { fullDay, halfDay, inOut, menginap } = keterangan;
+            const incomingIds = incomingList.filter(item => item.id).map(item => item.id);
 
-        if (Array.isArray(fullDay)) {
-            const data = fullDay.map(item => ({
-                id_mobil: id,
-                area_name: item.area,
-                price: item.price
-            }));
-            await Fullday.bulkCreate(data, { transaction: t });
-        }
+            // Update atau create
+            for (const item of incomingList) {
+                if (item.id) {
+                    const record = existing.find(e => e.id === item.id);
+                    if (record) {
+                        await record.update({
+                            area_name: item.area,
+                            price: item.price
+                        }, { transaction });
+                    }
+                } else {
+                    await Model.create({
+                        id_mobil: mobilId,
+                        area_name: item.area,
+                        price: item.price
+                    }, { transaction });
+                }
+            }
 
-        if (Array.isArray(halfDay)) {
-            const data = halfDay.map(item => ({
-                id_mobil: id,
-                area_name: item.area,
-                price: item.price
-            }));
-            await Halfday.bulkCreate(data, { transaction: t });
-        }
+            // Delete yang tidak ada di incoming
+            const toDelete = existing.filter(e => !incomingIds.includes(e.id));
+            await Promise.all(toDelete.map(e => e.destroy({ transaction })));
+        };
 
-        if (Array.isArray(inOut)) {
-            const data = inOut.map(item => ({
-                id_mobil: id,
-                area_name: item.area,
-                price: item.price
-            }));
-            await Inout.bulkCreate(data, { transaction: t });
-        }
+        // 🔹 Proses tiap tipe data keterangan
+        await syncAreaList(Fullday, 'fullday', id, keterangan.fullDay || [], t);
+        await syncAreaList(Halfday, 'halfday', id, keterangan.halfDay || [], t);
+        await syncAreaList(Inout, 'inout', id, keterangan.inOut || [], t);
+        await syncAreaList(Menginap, 'menginap', id, keterangan.menginap || [], t);
 
-        if (Array.isArray(menginap)) {
-            const data = menginap.map(item => ({
-                id_mobil: id,
-                area_name: item.area,
-                price: item.price
-            }));
-            await Menginap.bulkCreate(data, { transaction: t });
-        }
 
         await t.commit();
         formatResponse(res, 200, 'Mobil dan seluruh harga berhasil diupdate', { id });
@@ -270,6 +274,7 @@ const updateFullMobil = async (req, res) => {
         formatResponse(res, 500, error.message, null);
     }
 };
+
 
 module.exports = {
     createMobil,

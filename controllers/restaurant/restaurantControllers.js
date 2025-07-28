@@ -65,6 +65,7 @@ const getAllRestoFull = async (req, res) => {
       resto_name: resto.name,
       description: resto.description,
       packages: resto.packages.map((pkg) => ({
+        id: pkg.id,
         id_package: pkg.id,
         package_name: pkg.name,
         price_domestic_adult: pkg.price_domestic_adult,
@@ -192,10 +193,11 @@ const updateFullResto = async (req, res) => {
     const { resto_name, description, packages } = req.body;
 
     if (!resto_name || !Array.isArray(packages)) {
+      await t.rollback();
       return formatResponse(res, 400, 'Restaurant name and packages array are required', null);
     }
 
-    // Cek restoran
+    // ✅ Ambil data resto beserta paketnya
     const resto = await Restaurant.findByPk(id, {
       include: { model: PackageResto, as: 'packages' },
       transaction: t,
@@ -206,41 +208,78 @@ const updateFullResto = async (req, res) => {
       return formatResponse(res, 404, 'Restaurant not found', null);
     }
 
-    // Update nama restoran
+    // ✅ Update info restoran
     await resto.update({ name: resto_name, description }, { transaction: t });
 
-    // Hapus semua package lama
-    await Promise.all(
-      resto.packages.map(pkg => pkg.destroy({ transaction: t }))
-    );
+    // ✅ Ambil daftar paket yang sudah ada
+    const existingPackages = resto.packages;
+    const incomingIds = packages.filter(p => p.id).map(p => p.id);
 
-    // Buat semua package baru
-    const createdPackages = await Promise.all(
-      packages.map(pkg =>
-        PackageResto.create({
-          restaurant_id: resto.id,
-          name: pkg.name,
-          price_domestic_adult: pkg.price_domestic_adult,
-          price_domestic_child: pkg.price_domestic_child,
-          price_foreign_adult: pkg.price_foreign_adult,
-          price_foreign_child: pkg.price_foreign_child,
-          pax: pkg.pax,
-          note: pkg.note,
-          valid: pkg.valid,
-          link_contract: pkg.link_contract,
-        }, { transaction: t })
-      )
-    );
+    // ✅ Update / Create paket
+    const updatedPackages = [];
+
+    for (const pkg of packages) {
+      if (pkg.id) {
+        const existing = existingPackages.find(p => p.id === pkg.id);
+        if (existing) {
+          await existing.update({
+            name: pkg.name,
+            price_domestic_adult: pkg.price_domestic_adult,
+            price_domestic_child: pkg.price_domestic_child,
+            price_foreign_adult: pkg.price_foreign_adult,
+            price_foreign_child: pkg.price_foreign_child,
+            pax: pkg.pax,
+            note: pkg.note,
+            valid: pkg.valid,
+            link_contract: pkg.link_contract,
+          }, { transaction: t });
+
+          updatedPackages.push(existing);
+          continue;
+        }
+      }
+
+      // ➕ Buat baru
+      const newPkg = await PackageResto.create({
+        restaurant_id: resto.id,
+        name: pkg.name,
+        price_domestic_adult: pkg.price_domestic_adult,
+        price_domestic_child: pkg.price_domestic_child,
+        price_foreign_adult: pkg.price_foreign_adult,
+        price_foreign_child: pkg.price_foreign_child,
+        pax: pkg.pax,
+        note: pkg.note,
+        valid: pkg.valid,
+        link_contract: pkg.link_contract,
+      }, { transaction: t });
+
+      updatedPackages.push(newPkg);
+    }
+
+    // ❌ Hapus paket yang tidak dikirim lagi
+    const toDelete = existingPackages.filter(pkg => !incomingIds.includes(pkg.id));
+    await Promise.all(toDelete.map(pkg => pkg.destroy({ transaction: t })));
 
     await t.commit();
 
+    // ✅ Response
     formatResponse(res, 200, 'Restaurant and packages updated successfully', {
       id: resto.id,
       resto_name: resto.name,
       description: resto.description,
-      packages: createdPackages.map(pkg => ({
+      packages: updatedPackages.map(pkg => ({
         id_package: pkg.id,
-        ...pkg.dataValues,
+        name: pkg.name,
+        price_domestic_adult: pkg.price_domestic_adult,
+        price_domestic_child: pkg.price_domestic_child,
+        price_foreign_adult: pkg.price_foreign_adult,
+        price_foreign_child: pkg.price_foreign_child,
+        pax: pkg.pax,
+        note: pkg.note,
+        valid: pkg.valid,
+        link_contract: pkg.link_contract,
+        createdAt: pkg.createdAt,
+        updatedAt: pkg.updatedAt,
       })),
     });
   } catch (err) {
