@@ -97,6 +97,8 @@ const createFullPackage = async (req, res) => {
       const data = day.data || {};
 
       await Promise.all([
+
+        // AKOMODASI
         ...(data.akomodasi?.hotels || []).map(hotel => PaketHotel.create({
           paket_day_id: newDay.id,
           id_hotel: hotel.id_hotel,
@@ -118,26 +120,41 @@ const createFullPackage = async (req, res) => {
           id_additional: add.id_additional
         }, { transaction: t })),
 
-        ...(data.tour?.destinations || []).map(dest => PaketDestinasi.create({
-          paket_day_id: newDay.id,
-          id_destinasi: dest.id_destinasi,
-          type_wisata: dest.type_wisata
-        }, { transaction: t })),
+        // TOURS — gabungan dari destinasi, aktivitas, restoran
+        ...(data.tours || []).map(item => {
+          if (item.id_destinasi) {
+            return PaketDestinasi.create({
+              paket_day_id: newDay.id,
+              no: item.no,
+              id_destinasi: item.id_destinasi,
+              type_wisata: item.type_wisata
+            }, { transaction: t });
+          }
 
-        ...(data.tour?.activities || []).map(act => PaketAktivitas.create({
-          paket_day_id: newDay.id,
-          id_vendor: act.id_vendor,
-          id_activity: act.id_activity,
-          type_wisata: act.type_wisata
-        }, { transaction: t })),
+          if (item.id_activity) {
+            return PaketAktivitas.create({
+              paket_day_id: newDay.id,
+              no: item.no,
+              id_vendor: item.id_vendor,
+              id_activity: item.id_activity,
+              type_wisata: item.type_wisata
+            }, { transaction: t });
+          }
 
-        ...(data.tour?.restaurants || []).map(resto => PaketRestoran.create({
-          paket_day_id: newDay.id,
-          id_resto: resto.id_resto,
-          id_menu: resto.id_menu,
-          type_wisata: resto.type_wisata
-        }, { transaction: t })),
+          if (item.id_resto) {
+            return PaketRestoran.create({
+              paket_day_id: newDay.id,
+              no: item.no,
+              id_resto: item.id_resto,
+              id_menu: item.id_menu,
+              type_wisata: item.type_wisata
+            }, { transaction: t });
+          }
 
+          return Promise.resolve(); // Ignore if no known type
+        }),
+
+        // TRANSPORT
         ...(data.transport?.mobils || []).map(mobil => PaketTransportMobil.create({
           paket_day_id: newDay.id,
           id_mobil: mobil.id_mobil,
@@ -154,6 +171,7 @@ const createFullPackage = async (req, res) => {
 
     await t.commit();
     formatResponse(res, 201, 'Full package created successfully', { id: newPaket.id });
+
   } catch (err) {
     await t.rollback();
     formatResponse(res, 500, err.message, null);
@@ -180,7 +198,53 @@ const getAllFullPackages = async (req, res) => {
       }
     });
 
-    formatResponse(res, 200, 'Full packages retrieved successfully', packages);
+    // Format ulang hasilnya agar sesuai struktur JSON input
+    const formattedPackages = packages.map(pkg => ({
+      id: pkg.id,
+      name: pkg.name,
+      description: pkg.description,
+      days: pkg.days.map(day => {
+        const tours = [
+          ...(day.destinations || []).map(dest => ({
+            no: dest.no,
+            id_destinasi: dest.id_destinasi,
+            type_wisata: dest.type_wisata
+          })),
+          ...(day.activities || []).map(act => ({
+            no: act.no,
+            id_vendor: act.id_vendor,
+            id_activity: act.id_activity,
+            type_wisata: act.type_wisata
+          })),
+          ...(day.restaurants || []).map(resto => ({
+            no: resto.no,
+            id_resto: resto.id_resto,
+            id_menu: resto.id_menu,
+            type_wisata: resto.type_wisata
+          }))
+        ];
+
+        return {
+          id: day.id,
+          name: day.name,
+          description_day: day.description_day,
+          data: {
+            akomodasi: {
+              hotels: day.hotels || [],
+              villas: day.villas || [],
+              additional: day.akomodasi_additionals || []
+            },
+            tours,
+            transport: {
+              mobils: day.mobils || [],
+              additional: day.transport_additionals || []
+            }
+          }
+        };
+      })
+    }));
+
+    formatResponse(res, 200, 'Full packages retrieved successfully', formattedPackages);
   } catch (err) {
     formatResponse(res, 500, err.message, null);
   }
@@ -208,8 +272,10 @@ const updateFullPackage = async (req, res) => {
       return formatResponse(res, 404, 'Package not found', null);
     }
 
+    // Update header paket
     await paket.update({ name, description }, { transaction: t });
 
+    // Hapus semua relasi dari hari-hari lama
     if (paket.days && paket.days.length > 0) {
       for (const day of paket.days) {
         await Promise.all([
@@ -226,7 +292,7 @@ const updateFullPackage = async (req, res) => {
       }
     }
 
-    // Create new days
+    // Buat ulang hari-hari baru
     for (const day of days) {
       const newDay = await PaketDay.create({
         paket_id: paket.id,
@@ -237,6 +303,8 @@ const updateFullPackage = async (req, res) => {
       const data = day.data || {};
 
       await Promise.all([
+
+        // AKOMODASI
         ...(data.akomodasi?.hotels || []).map(h => PaketHotel.create({
           paket_day_id: newDay.id,
           id_hotel: h.id_hotel,
@@ -258,26 +326,41 @@ const updateFullPackage = async (req, res) => {
           id_additional: a.id_additional
         }, { transaction: t })),
 
-        ...(data.tour?.destinations || []).map(d => PaketDestinasi.create({
-          paket_day_id: newDay.id,
-          id_destinasi: d.id_destinasi,
-          type_wisata: d.type_wisata
-        }, { transaction: t })),
+        // TOURS (gabungan: destinasi, aktivitas, restoran)
+        ...(data.tours || []).map(item => {
+          if (item.id_destinasi) {
+            return PaketDestinasi.create({
+              paket_day_id: newDay.id,
+              no: item.no,
+              id_destinasi: item.id_destinasi,
+              type_wisata: item.type_wisata
+            }, { transaction: t });
+          }
 
-        ...(data.tour?.activities || []).map(a => PaketAktivitas.create({
-          paket_day_id: newDay.id,
-          id_vendor: a.id_vendor,
-          id_activity: a.id_activity,
-          type_wisata: a.type_wisata
-        }, { transaction: t })),
+          if (item.id_activity) {
+            return PaketAktivitas.create({
+              paket_day_id: newDay.id,
+              no: item.no,
+              id_vendor: item.id_vendor,
+              id_activity: item.id_activity,
+              type_wisata: item.type_wisata
+            }, { transaction: t });
+          }
 
-        ...(data.tour?.restaurants || []).map(r => PaketRestoran.create({
-          paket_day_id: newDay.id,
-          id_resto: r.id_resto,
-          id_menu: r.id_menu,
-          type_wisata: r.type_wisata
-        }, { transaction: t })),
+          if (item.id_resto) {
+            return PaketRestoran.create({
+              paket_day_id: newDay.id,
+              no: item.no,
+              id_resto: item.id_resto,
+              id_menu: item.id_menu,
+              type_wisata: item.type_wisata
+            }, { transaction: t });
+          }
 
+          return Promise.resolve();
+        }),
+
+        // TRANSPORT
         ...(data.transport?.mobils || []).map(m => PaketTransportMobil.create({
           paket_day_id: newDay.id,
           id_mobil: m.id_mobil,
@@ -294,6 +377,7 @@ const updateFullPackage = async (req, res) => {
 
     await t.commit();
     formatResponse(res, 200, 'Full package updated successfully', { id: paket.id });
+
   } catch (err) {
     await t.rollback();
     formatResponse(res, 500, err.message, null);
@@ -308,7 +392,8 @@ const deleteFullPackage = async (req, res) => {
 
     const paket = await Paket.findByPk(id, {
       include: { model: PaketDay, as: 'days' },
-      transaction: t
+      transaction: t,
+      lock: true
     });
 
     if (!paket) {
@@ -316,6 +401,7 @@ const deleteFullPackage = async (req, res) => {
       return formatResponse(res, 404, 'Package not found', null);
     }
 
+    // Hapus semua relasi dalam setiap hari
     for (const day of paket.days || []) {
       await Promise.all([
         PaketHotel.destroy({ where: { paket_day_id: day.id }, transaction: t }),
@@ -325,9 +411,10 @@ const deleteFullPackage = async (req, res) => {
         PaketAktivitas.destroy({ where: { paket_day_id: day.id }, transaction: t }),
         PaketRestoran.destroy({ where: { paket_day_id: day.id }, transaction: t }),
         PaketTransportMobil.destroy({ where: { paket_day_id: day.id }, transaction: t }),
-        PaketTransportAdditional.destroy({ where: { paket_day_id: day.id }, transaction: t }),
-        day.destroy({ transaction: t })
+        PaketTransportAdditional.destroy({ where: { paket_day_id: day.id }, transaction: t })
       ]);
+
+      await day.destroy({ transaction: t }); // pisahkan destroy day
     }
 
     await paket.destroy({ transaction: t });
@@ -338,6 +425,7 @@ const deleteFullPackage = async (req, res) => {
     formatResponse(res, 500, err.message, null);
   }
 };
+
 
 module.exports = {
   createPackage,

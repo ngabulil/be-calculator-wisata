@@ -6,6 +6,10 @@ const PaketRestoran = sequelize.define('PaketRestoran', {
     type: DataTypes.INTEGER,
     allowNull: false,
   },
+  no: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
   id_resto: {
     type: DataTypes.INTEGER,
     allowNull: false,

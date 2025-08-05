@@ -6,6 +6,10 @@ const PaketAktivitas = sequelize.define('PaketAktivitas', {
     type: DataTypes.INTEGER,
     allowNull: false,
   },
+  no: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
   id_vendor: {
     type: DataTypes.INTEGER,
     allowNull: false,

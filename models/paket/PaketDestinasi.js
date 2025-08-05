@@ -6,6 +6,10 @@ const PaketDestinasi = sequelize.define('PaketDestinasi', {
     type: DataTypes.INTEGER,
     allowNull: false,
   },
+  no: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
   id_destinasi: {
     type: DataTypes.INTEGER,
     allowNull: false,

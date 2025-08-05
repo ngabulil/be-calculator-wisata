@@ -6,23 +6,25 @@ module.exports = {
 
     try {
       // 1. Insert ke `paket`
-      const [paket] = await queryInterface.bulkInsert('paket', [{
+      const [paketId] = await queryInterface.bulkInsert('paket', [{
         name: 'Paket Liburan Bali 3 Hari 2 Malam',
         description: 'Liburan lengkap ke Bali termasuk hotel, aktivitas, dan transportasi.',
         createdAt: new Date(),
         updatedAt: new Date()
-      }], { returning: true, transaction: t });
+      }], { returning: ['id'], transaction: t });
+
+      const paket_id = paketId.id;
 
       // 2. Insert ke `paket_day`
-      const [day] = await queryInterface.bulkInsert('paket_day', [{
-        paket_id: paket.id,
+      const [dayId] = await queryInterface.bulkInsert('paket_day', [{
+        paket_id,
         name: 'Day 1',
         description_day: 'Penjemputan bandara dan check-in hotel.',
         createdAt: new Date(),
         updatedAt: new Date()
-      }], { returning: true, transaction: t });
+      }], { returning: ['id'], transaction: t });
 
-      const paket_day_id = day.id;
+      const paket_day_id = dayId.id;
 
       // 3. Insert Akomodasi
       await queryInterface.bulkInsert('paket_hotel', [
@@ -58,10 +60,11 @@ module.exports = {
         }
       ], { transaction: t });
 
-      // 4. Insert Tour
+      // 4. Insert Tour (dengan kolom `no`)
       await queryInterface.bulkInsert('paket_destinasi', [
         {
           paket_day_id,
+          no: 1,
           id_destinasi: 1,
           type_wisata: 'domestik',
           createdAt: new Date(),
@@ -72,6 +75,7 @@ module.exports = {
       await queryInterface.bulkInsert('paket_aktivitas', [
         {
           paket_day_id,
+          no: 2,
           id_vendor: 1,
           id_activity: 1,
           type_wisata: 'asing',
@@ -83,6 +87,7 @@ module.exports = {
       await queryInterface.bulkInsert('paket_restoran', [
         {
           paket_day_id,
+          no: 3,
           id_resto: 1,
           id_menu: 1,
           type_wisata: 'asing',
@@ -103,7 +108,6 @@ module.exports = {
         }
       ], { transaction: t });
 
-
       await queryInterface.bulkInsert('paket_transport_additional', [
         {
           paket_day_id,
@@ -121,15 +125,71 @@ module.exports = {
   },
 
   down: async (queryInterface, Sequelize) => {
-    await queryInterface.bulkDelete('paket_transport_additional', null, {});
-    await queryInterface.bulkDelete('paket_transport_mobil', null, {});
-    await queryInterface.bulkDelete('paket_restoran', null, {});
-    await queryInterface.bulkDelete('paket_aktivitas', null, {});
-    await queryInterface.bulkDelete('paket_destinasi', null, {});
-    await queryInterface.bulkDelete('paket_additional_akomodasi', null, {});
-    await queryInterface.bulkDelete('paket_villa', null, {});
-    await queryInterface.bulkDelete('paket_hotel', null, {});
-    await queryInterface.bulkDelete('paket_day', null, {});
-    await queryInterface.bulkDelete('paket', null, {});
+    const t = await queryInterface.sequelize.transaction();
+    try {
+      // Temukan paket yang akan dihapus berdasarkan name
+      const [paket] = await queryInterface.sequelize.query(
+        `SELECT id FROM paket WHERE name = 'Paket Liburan Bali 3 Hari 2 Malam'`,
+        { type: Sequelize.QueryTypes.SELECT, transaction: t }
+      );
+
+      if (paket && paket.id) {
+        const paket_id = paket.id;
+
+        // Temukan semua paket_day yang terkait
+        const days = await queryInterface.sequelize.query(
+          `SELECT id FROM paket_day WHERE paket_id = ${paket_id}`,
+          { type: Sequelize.QueryTypes.SELECT, transaction: t }
+        );
+
+        const dayIds = days.map(d => d.id);
+
+        // Hapus relasi berdasarkan paket_day_id
+        await queryInterface.bulkDelete('paket_transport_additional', {
+          paket_day_id: dayIds
+        }, { transaction: t });
+
+        await queryInterface.bulkDelete('paket_transport_mobil', {
+          paket_day_id: dayIds
+        }, { transaction: t });
+
+        await queryInterface.bulkDelete('paket_restoran', {
+          paket_day_id: dayIds
+        }, { transaction: t });
+
+        await queryInterface.bulkDelete('paket_aktivitas', {
+          paket_day_id: dayIds
+        }, { transaction: t });
+
+        await queryInterface.bulkDelete('paket_destinasi', {
+          paket_day_id: dayIds
+        }, { transaction: t });
+
+        await queryInterface.bulkDelete('paket_additional_akomodasi', {
+          paket_day_id: dayIds
+        }, { transaction: t });
+
+        await queryInterface.bulkDelete('paket_villa', {
+          paket_day_id: dayIds
+        }, { transaction: t });
+
+        await queryInterface.bulkDelete('paket_hotel', {
+          paket_day_id: dayIds
+        }, { transaction: t });
+
+        await queryInterface.bulkDelete('paket_day', {
+          paket_id
+        }, { transaction: t });
+
+        await queryInterface.bulkDelete('paket', {
+          id: paket_id
+        }, { transaction: t });
+      }
+
+      await t.commit();
+    } catch (err) {
+      await t.rollback();
+      throw err;
+    }
   }
 };
