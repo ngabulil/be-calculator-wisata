@@ -392,8 +392,7 @@ const deleteFullPackage = async (req, res) => {
 
     const paket = await Paket.findByPk(id, {
       include: { model: PaketDay, as: 'days' },
-      transaction: t,
-      lock: true
+      transaction: t
     });
 
     if (!paket) {
@@ -401,7 +400,6 @@ const deleteFullPackage = async (req, res) => {
       return formatResponse(res, 404, 'Package not found', null);
     }
 
-    // Hapus semua relasi dalam setiap hari
     for (const day of paket.days || []) {
       await Promise.all([
         PaketHotel.destroy({ where: { paket_day_id: day.id }, transaction: t }),
@@ -411,10 +409,9 @@ const deleteFullPackage = async (req, res) => {
         PaketAktivitas.destroy({ where: { paket_day_id: day.id }, transaction: t }),
         PaketRestoran.destroy({ where: { paket_day_id: day.id }, transaction: t }),
         PaketTransportMobil.destroy({ where: { paket_day_id: day.id }, transaction: t }),
-        PaketTransportAdditional.destroy({ where: { paket_day_id: day.id }, transaction: t })
+        PaketTransportAdditional.destroy({ where: { paket_day_id: day.id }, transaction: t }),
+        day.destroy({ transaction: t })
       ]);
-
-      await day.destroy({ transaction: t }); // pisahkan destroy day
     }
 
     await paket.destroy({ transaction: t });
@@ -425,7 +422,6 @@ const deleteFullPackage = async (req, res) => {
     formatResponse(res, 500, err.message, null);
   }
 };
-
 
 module.exports = {
   createPackage,
