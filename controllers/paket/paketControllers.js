@@ -80,6 +80,8 @@ const createFullPackage = async (req, res) => {
   const t = await Paket.sequelize.transaction();
   try {
     const { name, description, days } = req.body;
+    console.log(req.body);
+    
 
     if (!name || !Array.isArray(days) || days.length === 0) {
       return formatResponse(res, 400, 'Package name and at least one day are required', null);
@@ -256,7 +258,9 @@ const updateFullPackage = async (req, res) => {
   try {
     const { id } = req.params;
     const { name, description, days } = req.body;
-
+    console.log(id);
+    console.log(req.body);
+    
     if (!name || !Array.isArray(days)) {
       await t.rollback();
       return formatResponse(res, 400, 'Package name and days are required', null);
