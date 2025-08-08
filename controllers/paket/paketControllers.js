@@ -80,7 +80,7 @@ const createFullPackage = async (req, res) => {
   const t = await Paket.sequelize.transaction();
   try {
     const { name, description, days } = req.body;
-    console.log(req.body);
+    console.log(JSON.stringify(req.body));
     
 
     if (!name || !Array.isArray(days) || days.length === 0) {
@@ -259,7 +259,7 @@ const updateFullPackage = async (req, res) => {
     const { id } = req.params;
     const { name, description, days } = req.body;
     console.log(id);
-    console.log(req.body);
+    console.log(JSON.stringify(req.body)); // Log the req.body);
     
     if (!name || !Array.isArray(days)) {
       await t.rollback();
