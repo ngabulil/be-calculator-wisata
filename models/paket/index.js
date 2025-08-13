@@ -8,7 +8,7 @@ const PaketDestinasi = require('./PaketDestinasi');
 const PaketAktivitas = require('./PaketAktivitas');
 const PaketTransportMobil = require('./PaketTransportMobil');
 const PaketTransportAdditional = require('./PaketTransportAdditional');
-
+const Admin = require("../admin/Admin")
 
 // Relasi: 1 Paket punya banyak Hari
 Paket.hasMany(PaketDay, {
@@ -99,6 +99,8 @@ PaketTransportAdditional.belongsTo(PaketDay, {
     foreignKey: 'paket_day_id',
     as: 'day',
 });
+Paket.belongsTo(Admin, { as: 'creator', foreignKey: 'created_by' });
+Paket.belongsTo(Admin, { as: 'updater', foreignKey: 'updated_by' });
 
 module.exports = {
     Paket,
