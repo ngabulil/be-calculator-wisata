@@ -7,4 +7,9 @@ dist/
 
 # Environment files
 .env
-.env.*  # Jika kamu pakai env multiple seperti .env.development, .env.production
+.env.*  # multiple env seperti .env.development, .env.production
+
+# Database backups
+backup/*
+!backup/untitled
+!backup/.gitkeep
