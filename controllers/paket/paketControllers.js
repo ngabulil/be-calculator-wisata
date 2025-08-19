@@ -217,7 +217,7 @@ const deletePackage = async (req, res) => {
 //     formatResponse(res, 201, 'Full package created successfully', { id: newPaket.id });
 
 //   } catch (err) {
-console.error(err);
+// console.error(err);
 //     await t.rollback();
 //     formatResponse(res, 500, err.message, null);
 //   }
@@ -453,7 +453,7 @@ const createFullPackage = async (req, res) => {
 
 //     formatResponse(res, 200, 'Full packages retrieved successfully', formattedPackages);
 //   } catch (err) {
-console.error(err);
+// console.error(err);
 //     formatResponse(res, 500, err.message, null);
 //   }
 // };
@@ -688,7 +688,7 @@ const getAllFullPackages = async (req, res) => {
 //     formatResponse(res, 200, 'Full package updated successfully', { id: paket.id });
 
 //   } catch (err) {
-console.error(err);
+// console.error(err);
 //     await t.rollback();
 //     formatResponse(res, 500, err.message, null);
 //   }
@@ -935,7 +935,7 @@ const updateFullPackage = async (req, res) => {
 //     await t.commit();
 //     formatResponse(res, 200, 'Full package deleted successfully', null);
 //   } catch (err) {
-console.error(err);
+// console.error(err);
 //     await t.rollback();
 //     formatResponse(res, 500, err.message, null);
 //   }
