@@ -14,7 +14,7 @@ router.post(
     ]),
     pesananController.createPesanan
 );
-
 router.get('/', pesananController.getAllPesanan);
+router.delete('/:id', pesananController.deletePesanan);
 
 module.exports = router;

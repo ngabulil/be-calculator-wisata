@@ -1,7 +1,8 @@
 const { pesanan: Pesanan } = require('../../models/pesanan');
 const { formatResponse } = require('../../utils/formatResponse');
-const { v4: uuidv4 } = require('uuid');
 const { Admin } = require('../../models/admin');
+const path = require('path');
+const fs = require('fs').promises;
 
 // CREATE PESANAN
 const createPesanan = async (req, res) => {
@@ -11,9 +12,7 @@ const createPesanan = async (req, res) => {
         if (!id_admin) {
             return formatResponse(res, 403, 'Unauthorized: admin ID not found in token', null);
         }
-
-        const kode_pesanan = 'ORD-' + uuidv4().split('-')[0].toUpperCase();
-
+        const { kode_pesanan } = req.body;
         const invoiceFile = req.files?.invoice?.[0];
         const itineraryFile = req.files?.itinerary?.[0];
 
@@ -72,8 +71,49 @@ const getAllPesanan = async (req, res) => {
     }
 };
 
+// DELETE PESANAN (hapus record + file PDF)
+const deletePesanan = async (req, res) => {
+  const { id } = req.params; // asumsi: /pesanan/:id
+  try {
+    const data = await Pesanan.findByPk(id);
+
+    if (!data) {
+      return formatResponse(res, 404, 'Pesanan not found', null);
+    }
+
+    // Base dir ke folder public/pdf
+    // (Jika struktur proyekmu beda, sesuaikan relatif path-nya)
+    const basePdfDir = path.resolve(__dirname, '../../public/pdf');
+
+    const targets = [
+      { folder: 'invoice', filename: data.invoice_pdf },
+      { folder: 'itinerary', filename: data.itinerary_pdf }
+    ]
+      .filter(f => !!f.filename)
+      .map(f => path.join(basePdfDir, f.folder, f.filename));
+
+    // Hapus file—abaikan kalau tidak ada (ENOENT)
+    await Promise.all(
+      targets.map(async filePath => {
+        try {
+          await fs.unlink(filePath);
+        } catch (err) {
+          if (err.code !== 'ENOENT') throw err; // kalau selain "file tidak ada", lempar error
+        }
+      })
+    );
+
+    // Hapus record di DB
+    await data.destroy();
+
+    return formatResponse(res, 200, 'Pesanan deleted', { id });
+  } catch (err) {
+    return formatResponse(res, 500, err.message, null);
+  }
+};
 
 module.exports = {
     createPesanan,
-    getAllPesanan
+    getAllPesanan,
+    deletePesanan
 };
