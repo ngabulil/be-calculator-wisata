@@ -19,6 +19,10 @@ const Pesanan = sequelize.define('Pesanan', {
   id_admin: {
     type: DataTypes.INTEGER,
     allowNull: false
+  },
+  id_paket: {
+    type: DataTypes.INTEGER,
+    allowNull: true
   }
 }, {
   tableName: 'pesanan',

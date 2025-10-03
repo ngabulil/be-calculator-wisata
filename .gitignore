@@ -13,3 +13,4 @@ dist/
 backup/*
 !backup/untitled
 !backup/.gitkeep
+public
