@@ -16,6 +16,10 @@ const Pesanan = sequelize.define('Pesanan', {
     type: DataTypes.STRING,
     allowNull: true
   },
+  itinerary_word: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
   id_admin: {
     type: DataTypes.INTEGER,
     allowNull: false

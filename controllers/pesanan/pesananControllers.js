@@ -15,33 +15,68 @@ const {
 const path = require('path');
 const fs = require('fs').promises;
 
-// CREATE PESANAN
+// // CREATE PESANAN
+// const createPesanan = async (req, res) => {
+//   try {
+//     // ✅ Ambil ID admin dari JWT token
+//     const id_admin = req.user?.id;
+//     if (!id_admin) {
+//       return formatResponse(res, 403, 'Unauthorized: admin ID not found in token', null);
+//     }
+//     const { kode_pesanan } = req.body;
+//     const invoiceFile = req.files?.invoice?.[0];
+//     const itineraryFile = req.files?.itinerary?.[0];
+
+//     if (!invoiceFile || !itineraryFile) {
+//       return formatResponse(res, 400, 'Both invoice and itinerary PDFs are required', null);
+//     }
+
+//     const pesanan = await Pesanan.create({
+//       kode_pesanan,
+//       invoice_pdf: invoiceFile.filename,
+//       itinerary_pdf: itineraryFile.filename,
+//       id_admin,
+//       id_paket: req.body.id_paket
+//     });
+
+//     formatResponse(res, 201, 'Pesanan created', pesanan);
+//   } catch (err) {
+//     formatResponse(res, 500, err.message, null);
+//   }
+// };
+
 const createPesanan = async (req, res) => {
   try {
-    // ✅ Ambil ID admin dari JWT token
     const id_admin = req.user?.id;
     if (!id_admin) {
       return formatResponse(res, 403, 'Unauthorized: admin ID not found in token', null);
     }
+
     const { kode_pesanan } = req.body;
     const invoiceFile = req.files?.invoice?.[0];
     const itineraryFile = req.files?.itinerary?.[0];
+    const itineraryWordFile = req.files?.itinerary_word?.[0]; // new
 
-    if (!invoiceFile || !itineraryFile) {
-      return formatResponse(res, 400, 'Both invoice and itinerary PDFs are required', null);
+    // Tetap wajibkan invoice + itinerary (pdf). itinerary_word opsional.
+    if (!invoiceFile || !itineraryFile || !itineraryWordFile) {
+      return formatResponse(res, 400, 'invoice, itinerary (pdf) and itinerary_word (doc/docx) are required', null);
     }
 
-    const pesanan = await Pesanan.create({
+    const pesananData = {
       kode_pesanan,
       invoice_pdf: invoiceFile.filename,
       itinerary_pdf: itineraryFile.filename,
+      itinerary_word: itineraryWordFile.filename,
       id_admin,
       id_paket: req.body.id_paket
-    });
+    };
+
+    const pesanan = await Pesanan.create(pesananData);
 
     formatResponse(res, 201, 'Pesanan created', pesanan);
   } catch (err) {
-    formatResponse(res, 500, err.message, null);
+    // Kalau error dari multer (tipe file), err bisa berisi message yang jelas
+    formatResponse(res, 500, err.message || 'Internal server error', null);
   }
 };
 
@@ -85,7 +120,7 @@ const createPesanan = async (req, res) => {
 
 const getAllPesanan = async (req, res) => {
   try {
-    const baseUrl = `${req.protocol}://${req.get('host')}/pdf`;
+    const baseUrl = `${req.protocol}://${req.get('host')}`;
     const sortOrder = req.query.sort?.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
 
     const list = await Pesanan.findAll({
@@ -197,8 +232,9 @@ const getAllPesanan = async (req, res) => {
       return {
         id: p.id,
         kode_pesanan: p.kode_pesanan,
-        invoice_pdf: `${baseUrl}/invoice/${p.invoice_pdf}`,
-        itinerary_pdf: `${baseUrl}/itinerary/${p.itinerary_pdf}`,
+        invoice_pdf: `${baseUrl}/pdf/invoice/${p.invoice_pdf}`,
+        itinerary_pdf: `${baseUrl}/pdf/itinerary/${p.itinerary_pdf}`,
+        itinerary_word: p.itinerary_word ? `${baseUrl}/word/itinerary/${p.itinerary_word}` : null,
         createdAt: p.createdAt,
         updatedAt: p.updatedAt,
         admin: p.admin ? {
@@ -217,7 +253,7 @@ const getAllPesanan = async (req, res) => {
 
 // DELETE PESANAN (hapus record + file PDF)
 const deletePesanan = async (req, res) => {
-  const { id } = req.params; // asumsi: /pesanan/:id
+  const { id } = req.params;
   try {
     const data = await Pesanan.findByPk(id);
 
@@ -225,36 +261,84 @@ const deletePesanan = async (req, res) => {
       return formatResponse(res, 404, 'Pesanan not found', null);
     }
 
-    // Base dir ke folder public/pdf
-    // (Jika struktur proyekmu beda, sesuaikan relatif path-nya)
+    // direktori dasar
     const basePdfDir = path.resolve(__dirname, '../../public/pdf');
+    const baseWordDir = path.resolve(__dirname, '../../public/word');
 
-    const targets = [
-      { folder: 'invoice', filename: data.invoice_pdf },
-      { folder: 'itinerary', filename: data.itinerary_pdf }
-    ]
-      .filter(f => !!f.filename)
-      .map(f => path.join(basePdfDir, f.folder, f.filename));
+    // kumpulkan file yang harus dihapus (dengan base yang sesuai)
+    const filesToDelete = [];
+    if (data.invoice_pdf) filesToDelete.push({ base: basePdfDir, folder: 'invoice', filename: data.invoice_pdf });
+    if (data.itinerary_pdf) filesToDelete.push({ base: basePdfDir, folder: 'itinerary', filename: data.itinerary_pdf });
+    // itinerary_word disimpan di public/word/itinerary menurut strukturmu
+    if (data.itinerary_word) filesToDelete.push({ base: baseWordDir, folder: 'itinerary', filename: data.itinerary_word });
 
-    // Hapus file—abaikan kalau tidak ada (ENOENT)
+    // hapus file — jika file tidak ada (ENOENT) abaikan, tapi kalau error lain -> lempar
     await Promise.all(
-      targets.map(async filePath => {
+      filesToDelete.map(async f => {
+        const filePath = path.join(f.base, f.folder, f.filename);
         try {
           await fs.unlink(filePath);
         } catch (err) {
-          if (err.code !== 'ENOENT') throw err; // kalau selain "file tidak ada", lempar error
+          if (err.code !== 'ENOENT') {
+            // log kalau perlu sebelum melempar
+            console.error('Failed to delete file', filePath, err);
+            throw err;
+          }
+          // kalau ENOENT, abaikan
         }
       })
     );
 
-    // Hapus record di DB
+    // hapus record DB
     await data.destroy();
 
     return formatResponse(res, 200, 'Pesanan deleted', { id });
   } catch (err) {
-    return formatResponse(res, 500, err.message, null);
+    console.error(err);
+    return formatResponse(res, 500, err.message || 'Internal server error', null);
   }
 };
+// const deletePesanan = async (req, res) => {
+//   const { id } = req.params; // asumsi: /pesanan/:id
+//   try {
+//     const data = await Pesanan.findByPk(id);
+
+//     if (!data) {
+//       return formatResponse(res, 404, 'Pesanan not found', null);
+//     }
+
+//     // Base dir ke folder public/pdf
+//     // (Jika struktur proyekmu beda, sesuaikan relatif path-nya)
+//     const basePdfDir = path.resolve(__dirname, '../../public/pdf');
+//     const baseWordDir = path.resolve(__dirname, '../../public/word')
+
+//     const targets = [
+//       { folder: 'invoice', filename: data.invoice_pdf },
+//       { folder: 'itinerary', filename: data.itinerary_pdf },
+//       { folder: 'itinerary', filename: data.itinerary_word },
+//     ]
+//       .filter(f => !!f.filename)
+//       .map(f => path.join(basePdfDir, f.folder, f.filename));
+
+//     // Hapus file—abaikan kalau tidak ada (ENOENT)
+//     await Promise.all(
+//       targets.map(async filePath => {
+//         try {
+//           await fs.unlink(filePath);
+//         } catch (err) {
+//           if (err.code !== 'ENOENT') throw err; // kalau selain "file tidak ada", lempar error
+//         }
+//       })
+//     );
+
+//     // Hapus record di DB
+//     await data.destroy();
+
+//     return formatResponse(res, 200, 'Pesanan deleted', { id });
+//   } catch (err) {
+//     return formatResponse(res, 500, err.message, null);
+//   }
+// };
 
 module.exports = {
   createPesanan,
