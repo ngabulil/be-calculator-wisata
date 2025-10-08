@@ -14,10 +14,6 @@ const PORT = process.env.PORT || 5000;
 // Middleware
 app.use(cors());
 app.set('trust proxy', 1);
-app.use((req, res, next) => {
-  if (!req.secure) return res.redirect(301, 'https://' + req.headers.host + req.originalUrl);
-  next();
-});
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.get('/word/itinerary/:filename', (req, res) => {
