@@ -16,26 +16,28 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.get('/word/itinerary/:filename', (req, res) => {
-  const { filename } = req.params;
 
-  // cegah akses file ilegal (security)
-  if (filename.includes('..')) return res.status(400).send('Invalid filename');
+    const { filename } = req.params;
 
-  // ✅ sesuaikan dengan lokasi file kamu: public/word/itinerary
-  const filePath = path.join(__dirname, 'public/word/itinerary', filename);
+    // cegah akses file ilegal (security)
+    if (filename.includes('..')) return res.status(400).send('Invalid filename');
 
-  // cek apakah file ada
-  if (!fs.existsSync(filePath)) {
-    return res.status(404).send('File not found');
-  }
+    // ✅ sesuaikan dengan lokasi file kamu: public/word/itinerary
+    const filePath = path.join(__dirname, 'public/word/itinerary', filename);
 
-  // otomatis memicu download di browser
-  res.download(filePath, filename, err => {
-    if (err) {
-      console.error('Download error:', err);
-      res.status(500).send('Error while downloading file.');
+    // cek apakah file ada
+    if (!fs.existsSync(filePath)) {
+        return res.status(404).send('File not found');
     }
-  });
+
+    console.log(filePath);
+    // otomatis memicu download di browser
+    res.download(filePath, filename, err => {
+        if (err) {
+            console.error('Download error:', err);
+            res.status(500).send('Error while downloading file.');
+        }
+    });
 });
 
 // Static folder for PDFs (or other public assets)
