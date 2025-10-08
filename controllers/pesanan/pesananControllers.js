@@ -120,7 +120,9 @@ const createPesanan = async (req, res) => {
 
 const getAllPesanan = async (req, res) => {
   try {
-    const baseUrl = `${req.protocol}://${req.get('host')}`;
+    // const baseUrl = `${req.protocol}://${req.get('host')}`;
+    const baseUrl = `https://${req.get('host')}`;
+
     const sortOrder = req.query.sort?.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
 
     const list = await Pesanan.findAll({
