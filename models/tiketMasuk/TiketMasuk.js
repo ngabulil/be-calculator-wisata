@@ -33,6 +33,7 @@ const TiketMasuk = sequelize.define('TiketMasuk', {
 }, {
   tableName: 'tiket_masuk',
   timestamps: true,
+  paranoid: true
 });
 
 module.exports = TiketMasuk;

@@ -13,6 +13,7 @@ const PaketTransportAdditional = sequelize.define('PaketTransportAdditional', {
 }, {
   tableName: 'paket_transport_additional',
   timestamps: true,
+  paranoid: true
 });
 
 module.exports = PaketTransportAdditional;

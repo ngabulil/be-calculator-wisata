@@ -5,6 +5,7 @@ const router = require('./routes/routes');
 const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
+const auditLogMiddleware = require('./middlewares/logsMiddleware');
 require('./models/index'); // Pastikan ini mendaftarkan semua model
 
 dotenv.config();
@@ -43,21 +44,16 @@ app.get('/word/itinerary/:filename', (req, res) => {
 // Static folder for PDFs (or other public assets)
 app.use('/', express.static(path.join(__dirname, 'public')));
 
+// logging middleware
+app.use('/api', auditLogMiddleware());
+
 // API routes
 app.use('/api', router);
 
 // DB Connection + Sync
 sequelize.authenticate()
-    .then(() => {
-        console.log('✅ Connected to DB via Sequelize');
-        return sequelize.sync({ alter: true }); // gunakan { force: true } kalau mau reset tabel
-    })
-    .then(() => {
-        console.log('✅ Models synced');
-    })
-    .catch(err => {
-        console.error('❌ Failed to connect to DB:', err.message);
-    });
+  .then(() => console.log('✅ Connected to DB'))
+  .catch(err => console.error(err));
 
 // Server Listen
 app.listen(PORT, () => {

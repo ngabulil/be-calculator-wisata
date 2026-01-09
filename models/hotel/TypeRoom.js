@@ -21,6 +21,7 @@ const TypeRoom = sequelize.define('TypeRoom', {
 }, {
   tableName: 'tipe_room', // nama tabel di PostgreSQL
   timestamps: true,       // aktifkan createdAt & updatedAt
+  paranoid: true
 });
 
 module.exports = TypeRoom;

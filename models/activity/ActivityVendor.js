@@ -9,6 +9,7 @@ const ActivityVendor = sequelize.define('ActivityVendor', {
 }, {
   tableName: 'activity_vendor',
   timestamps: true,
+  paranoid: true
 });
 
 module.exports = ActivityVendor;

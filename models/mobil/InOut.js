@@ -17,6 +17,7 @@ const Inout = sequelize.define('Inout', {
 }, {
   tableName: 'inout',
   timestamps: true,
+  paranoid: true
 });
 
 module.exports = Inout;

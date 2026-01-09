@@ -25,6 +25,7 @@ const PaketVilla = sequelize.define('PaketVilla', {
 }, {
   tableName: 'paket_villa',
   timestamps: true,
+  paranoid: true
 });
 
 module.exports = PaketVilla;

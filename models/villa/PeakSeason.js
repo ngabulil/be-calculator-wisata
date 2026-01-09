@@ -21,6 +21,7 @@ const PeakSeason = sequelize.define('PeakSeasonVilla', {
 }, {
   tableName: 'peakseason_villa',
   timestamps: true,
+  paranoid: true
 });
 
 module.exports = PeakSeason;

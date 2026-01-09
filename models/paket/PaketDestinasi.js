@@ -21,6 +21,7 @@ const PaketDestinasi = sequelize.define('PaketDestinasi', {
 }, {
   tableName: 'paket_destinasi',
   timestamps: true,
+  paranoid: true
 });
 
 module.exports = PaketDestinasi;

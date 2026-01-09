@@ -30,7 +30,8 @@ const Pesanan = sequelize.define('Pesanan', {
   }
 }, {
   tableName: 'pesanan',
-  timestamps: true
+  timestamps: true,
+  paranoid: true
 });
 
 module.exports = Pesanan;

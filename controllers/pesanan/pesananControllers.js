@@ -264,32 +264,32 @@ const deletePesanan = async (req, res) => {
     }
 
     // direktori dasar
-    const basePdfDir = path.resolve(__dirname, '../../public/pdf');
-    const baseWordDir = path.resolve(__dirname, '../../public/word');
+    // const basePdfDir = path.resolve(__dirname, '../../public/pdf');
+    // const baseWordDir = path.resolve(__dirname, '../../public/word');
 
     // kumpulkan file yang harus dihapus (dengan base yang sesuai)
-    const filesToDelete = [];
-    if (data.invoice_pdf) filesToDelete.push({ base: basePdfDir, folder: 'invoice', filename: data.invoice_pdf });
-    if (data.itinerary_pdf) filesToDelete.push({ base: basePdfDir, folder: 'itinerary', filename: data.itinerary_pdf });
+    // const filesToDelete = [];
+    // if (data.invoice_pdf) filesToDelete.push({ base: basePdfDir, folder: 'invoice', filename: data.invoice_pdf });
+    // if (data.itinerary_pdf) filesToDelete.push({ base: basePdfDir, folder: 'itinerary', filename: data.itinerary_pdf });
     // itinerary_word disimpan di public/word/itinerary menurut strukturmu
-    if (data.itinerary_word) filesToDelete.push({ base: baseWordDir, folder: 'itinerary', filename: data.itinerary_word });
+    // if (data.itinerary_word) filesToDelete.push({ base: baseWordDir, folder: 'itinerary', filename: data.itinerary_word });
 
     // hapus file — jika file tidak ada (ENOENT) abaikan, tapi kalau error lain -> lempar
-    await Promise.all(
-      filesToDelete.map(async f => {
-        const filePath = path.join(f.base, f.folder, f.filename);
-        try {
-          await fs.unlink(filePath);
-        } catch (err) {
-          if (err.code !== 'ENOENT') {
-            // log kalau perlu sebelum melempar
-            console.error('Failed to delete file', filePath, err);
-            throw err;
-          }
-          // kalau ENOENT, abaikan
-        }
-      })
-    );
+    // await Promise.all(
+    //   filesToDelete.map(async f => {
+    //     const filePath = path.join(f.base, f.folder, f.filename);
+    //     try {
+    //       await fs.unlink(filePath);
+    //     } catch (err) {
+    //       if (err.code !== 'ENOENT') {
+    //         // log kalau perlu sebelum melempar
+    //         console.error('Failed to delete file', filePath, err);
+    //         throw err;
+    //       }
+    //       // kalau ENOENT, abaikan
+    //     }
+    //   })
+    // );
 
     // hapus record DB
     await data.destroy();

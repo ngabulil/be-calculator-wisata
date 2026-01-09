@@ -21,6 +21,7 @@ const PaketTransportMobil = sequelize.define('PaketTransportMobil', {
 }, {
   tableName: 'paket_transport_mobil',
   timestamps: true,
+  paranoid: true
 });
 
 module.exports = PaketTransportMobil;

@@ -45,6 +45,7 @@ const ActivityDetail = sequelize.define('ActivityDetail', {
 }, {
   tableName: 'activity_detail',
   timestamps: true,
+  paranoid: true
 });
 
 module.exports = ActivityDetail;

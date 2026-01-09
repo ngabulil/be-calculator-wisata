@@ -17,6 +17,7 @@ const Fullday = sequelize.define('Fullday', {
 }, {
   tableName: 'fullday',
   timestamps: true,
+  paranoid: true
 });
 
 module.exports = Fullday;

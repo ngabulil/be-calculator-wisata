@@ -25,6 +25,7 @@ const PaketHotel = sequelize.define('PaketHotel', {
 }, {
   tableName: 'paket_hotel',
   timestamps: true,
+  paranoid: true
 });
 
 module.exports = PaketHotel;

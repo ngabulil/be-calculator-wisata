@@ -9,6 +9,7 @@ const AdditionalInfo = sequelize.define('AdditionalInfo', {
 }, {
     tableName: 'additionalinfo_akomodasi',
     timestamps: true,
+    paranoid: true
 });
 
 module.exports = AdditionalInfo;

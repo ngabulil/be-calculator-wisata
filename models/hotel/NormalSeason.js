@@ -17,6 +17,7 @@ const NormalSeason = sequelize.define('NormalSeason', {
 }, {
   tableName: 'normalseason',
   timestamps: true,
+  paranoid: true
 });
 
 module.exports = NormalSeason;

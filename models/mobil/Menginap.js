@@ -17,6 +17,7 @@ const Menginap = sequelize.define('Menginap', {
 }, {
   tableName: 'menginap',
   timestamps: true,
+  paranoid: true
 });
 
 module.exports = Menginap;

@@ -17,6 +17,7 @@ const Mobil = sequelize.define('Mobil', {
 }, {
   tableName: 'mobil',
   timestamps: true,
+  paranoid: true
 });
 
 module.exports = Mobil;

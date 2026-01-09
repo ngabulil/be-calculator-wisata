@@ -9,6 +9,7 @@ const ModelsActivity = require('./activity/index');
 const ModelsTiketMasuk = require('./tiketMasuk/index');
 const ModelsPesanan = require('./pesanan/index');
 const ModelsAdmin = require('./admin/index');
+const ModelAuditLog = require('./logs/index');
 
 module.exports = {
     ModelsHotel,
@@ -21,5 +22,6 @@ module.exports = {
     ModelsActivity,
     ModelsTiketMasuk,
     ModelsPesanan,
-    ModelsAdmin
+    ModelsAdmin,
+    ModelAuditLog
 }

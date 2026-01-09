@@ -17,6 +17,7 @@ const PaketDay = sequelize.define('PaketDay', {
 }, {
   tableName: 'paket_day',
   timestamps: true,
+  paranoid: true
 });
 
 module.exports = PaketDay;

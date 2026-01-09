@@ -45,6 +45,7 @@ const PackageResto = sequelize.define('PackageResto', {
 }, {
   tableName: 'package_resto',
   timestamps: true,
+  paranoid: true
 });
 
 module.exports = PackageResto;

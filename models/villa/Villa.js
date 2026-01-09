@@ -21,6 +21,7 @@ const Villa = sequelize.define('Villa', {
 }, {
   tableName: 'villa',
   timestamps: true,
+  paranoid: true
 });
 
 module.exports = Villa;

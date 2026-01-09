@@ -13,6 +13,7 @@ const PaketAdditionalAkomodasi = sequelize.define('PaketAdditionalAkomodasi', {
 }, {
   tableName: 'paket_additional_akomodasi',
   timestamps: true,
+  paranoid: true
 });
 
 module.exports = PaketAdditionalAkomodasi;

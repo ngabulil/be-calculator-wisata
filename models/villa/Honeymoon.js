@@ -17,6 +17,7 @@ const Honeymoon = sequelize.define('Honeymoon', {
 }, {
   tableName: 'honeymoon_villa',
   timestamps: true,
+  paranoid: true
 });
 
 module.exports = Honeymoon;

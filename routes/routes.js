@@ -9,6 +9,7 @@ const activityRoutes = require('./activity/index');
 const tiketMasukRoutes = require('./tiketMasuk/index');
 const pesananRoutes = require('./pesanan/index');
 const adminRoutes = require('./admin/index');
+const logRoutes = require('./logs/index');
 const router = require('express').Router();
 
 router.use('/hotels', hotelRoutes);
@@ -22,5 +23,6 @@ router.use('/activity', activityRoutes);
 router.use('/tiket-masuk', tiketMasukRoutes);
 router.use('/pesanan', pesananRoutes);
 router.use('/admin', adminRoutes);
+router.use('/logs', logRoutes);
 
 module.exports = router;

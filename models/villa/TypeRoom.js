@@ -25,6 +25,7 @@ const TypeRoom = sequelize.define('TypeRoomVilla', {
 }, {
   tableName: 'tipe_room_villa', 
   timestamps: true,
+  paranoid: true
 });
 
 module.exports = TypeRoom;

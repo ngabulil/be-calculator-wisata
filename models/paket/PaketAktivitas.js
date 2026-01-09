@@ -25,6 +25,7 @@ const PaketAktivitas = sequelize.define('PaketAktivitas', {
 }, {
   tableName: 'paket_aktivitas',
   timestamps: true,
+  paranoid: true
 });
 
 module.exports = PaketAktivitas;
